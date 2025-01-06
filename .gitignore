@@ -2,6 +2,7 @@ book
 
 #emacs
 *~
-
+*#
+*#*
 #Rust
 *target/
