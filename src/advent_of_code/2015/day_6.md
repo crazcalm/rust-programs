@@ -84,3 +84,39 @@ It took longer than I thought to write, but it wasn't that bad. To make the prog
   - Also, the long string of methods I used to actually parse the &str to usize was annoying. Cloning &str clones the pointer and not the value, so I converted to a String, but Strings do not have a split method. So I converted the String to str and then did the split and parse.
 - The program is long! I did not like how long this is.
 
+## The Problem Part 2
+
+You just finish implementing your winning light pattern when you realize you mistranslated Santa's message from Ancient Nordic Elvish.
+
+The light grid you bought actually has individual brightness controls; each light can have a brightness of zero or more. The lights all start at zero.
+
+The phrase turn on actually means that you should increase the brightness of those lights by 1.
+
+The phrase turn off actually means that you should decrease the brightness of those lights by 1, to a minimum of zero.
+
+The phrase toggle actually means that you should increase the brightness of those lights by 2.
+
+What is the total brightness of all lights combined after following Santa's instructions?
+
+For example:
+
+> turn on 0,0 through 0,0 would increase the total brightness by 1.
+
+> toggle 0,0 through 999,999 would increase the total brightness by 2000000.
+
+### Thoughts
+
+I actually think this is easier than part one. I don't need an enum anymore. I can have a regular struct that has an internal counter that goes up and down with a min value of zero. And the structure of the program is identical to the first one.
+
+I am going to try to write this up quickly and move on to my next task for the night.
+
+```rust
+{{ #include ../../../advent_of_code/2015/day_6_part_2/src/main.rs }}
+```
+
+The changes were so minor that this win doesn't feel like it counts. I changed the enum to a struct and updated the methods to do the brightness thing. I also added a new method get the current brightness level, but my counter is of type usize, so I don't have to worry about the borrow checker. Anyway, since I kept the name `Light` when I made the change from enum to struct, all the type checking and setup remained valid. 
+The next thing I changes was in the `change_lights` function, and all I had to do was call the `turn_on`, `turn_off`, and `toggle` method on the `Lights`.
+
+Lastly, I changed how I do the counting at the end of the program. Then I updated the last print statement for kicks.
+
+This feels like the part 2 was way too easy when compared to the part 1, but its probably the case that I made part 1 more complicated than it needed to be. I used an enum when 0, 1 and a few if statements would have worked. If that was my starting point, then part 2 would have been a lot more difficult than part 2. 
