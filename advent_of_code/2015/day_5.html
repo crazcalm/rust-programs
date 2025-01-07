@@ -1,0 +1,402 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 5 - Rust Programs</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust Programs</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day-5-doesnt-he-have-intern-elves-for-this"><a class="header" href="#day-5-doesnt-he-have-intern-elves-for-this">Day 5: Doesn't He Have Intern-Elves For This?</a></h1>
+<p><a href="https://adventofcode.com/2015/day/5">link to the problem</a></p>
+<h2 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h2>
+<p>Santa needs help figuring out which strings in his text file are naughty or nice.</p>
+<p>A nice string is one with all of the following properties:</p>
+<ol>
+<li>It contains at least three vowels (aeiou only), like aei, xazegov, or aeiouaeiouaeiou.</li>
+<li>It contains at least one letter that appears twice in a row, like xx, abcdde (dd), or aabbccdd (aa, bb, cc, or dd).</li>
+<li>It does not contain the strings ab, cd, pq, or xy, even if they are part of one of the other requirements.</li>
+</ol>
+<p>For example:</p>
+<blockquote>
+<p>ugknbfddgicrmopn is nice because it has at least three vowels (u...i...o...), a double letter (...dd...), and none of the disallowed substrings.</p>
+</blockquote>
+<blockquote>
+<p>aaa is nice because it has at least three vowels and a double letter, even though the letters used by different rules overlap.</p>
+</blockquote>
+<blockquote>
+<p>jchzalrnumimnmhp is naughty because it has no double letter.</p>
+</blockquote>
+<blockquote>
+<p>haegwjzuvuyypxyu is naughty because it contains the string xy.</p>
+</blockquote>
+<blockquote>
+<p>dvszwmarrgswjxmb is naughty because it contains only one vowel.</p>
+</blockquote>
+<p>How many strings are nice?</p>
+<h3 id="thoughts"><a class="header" href="#thoughts">Thoughts</a></h3>
+<p>This sounds like a one pass scan of the word with various check. For example, the first check is the vowels, so you add a set of vowels and check the current character against it and count the positive hits.</p>
+<p>The second condition is two character condition. If you are iterating over the input one character at a time, it makes sense to use index 0 to set the first <code>prev_char</code> and then use the pair of the previous character and the current character to check this condition (Must remember to update <code>prev_char</code>).</p>
+<p>The third condition has a similar setup to the second condition, but it is a "not containt", which means means that we can use this for early termination (ie, continue to the next input, but we don't have to. This could just be a flag as well).</p>
+<p>On the face of it, this seems pretty straight forward. Lets try to write it up.</p>
+<pre><pre class="playground"><code class="language-rust">use std::collections::HashSet;
+use std::io;
+
+fn main() {
+    let mut nice_string = 0;
+
+    let vowels = HashSet::from(['a', 'e', 'i', 'o', 'u']);
+    let bad_pairs = HashSet::from(["ab", "cd", "pq", "xy"]);
+
+    for line in io::stdin().lines() {
+        let mut vowel_count = 0;
+        let mut double_char_count = 0;
+        let mut bad_pair_count = 0;
+        let mut prev_char = None;
+
+        for (index, character) in line.unwrap().chars().enumerate() {
+            if vowels.contains(&amp;character) {
+                vowel_count += 1;
+            }
+
+            match prev_char {
+                None =&gt; prev_char = Some(character),
+                Some(prev) =&gt; {
+                    if prev.eq(&amp;character) {
+                        double_char_count += 1;
+                    }
+
+                    if bad_pairs.contains(format!("{}{}", prev, character).as_str()) {
+                        bad_pair_count += 1;
+                    }
+
+                    prev_char = Some(character)
+                }
+            }
+        }
+
+        if bad_pair_count == 0 &amp;&amp; vowel_count &gt;= 3 &amp;&amp; double_char_count &gt;= 1 {
+            nice_string += 1;
+        }
+
+        println!(
+            "nice string count: {} ---- vowels: {}, doubles: {}, bad pairs: {}",
+            nice_string, vowel_count, double_char_count, bad_pair_count
+        );
+    }
+}</code></pre></pre>
+<p>It was actually that straight forward. The only new insight I had while writing it up is that the <code>prev_char</code> is easier to handle as a <a href="https://doc.rust-lang.org/std/option/enum.Option.html">Option</a> because I could then use a match statement to handle all of the stuff linked to <code>prev_char</code> in one place.</p>
+<h2 id="the-problem-part-2"><a class="header" href="#the-problem-part-2">The Problem Part 2</a></h2>
+<p>Realizing the error of his ways, Santa has switched to a better model of determining whether a string is naughty or nice. None of the old rules apply, as they are all clearly ridiculous.</p>
+<p>Now, a nice string is one with all of the following properties:</p>
+<ol>
+<li>It contains a pair of any two letters that appears at least twice in the string without overlapping, like xyxy (xy) or aabcdefgaa (aa), but not like aaa (aa, but it overlaps).</li>
+<li>It contains at least one letter which repeats with exactly one letter between them, like xyx, abcdefeghi (efe), or even aaa.</li>
+</ol>
+<p>For example:</p>
+<blockquote>
+<p>qjhvhtzxzqqjkmpb is nice because is has a pair that appears twice (qj) and a letter that repeats with exactly one letter between them (zxz).</p>
+</blockquote>
+<blockquote>
+<p>xxyxx is nice because it has a pair that appears twice and a letter that repeats with one between, even though the letters used by each rule overlap.</p>
+</blockquote>
+<blockquote>
+<p>uurcxstgmygtbstg is naughty because it has a pair (tg) but no repeat with a single letter between them.</p>
+</blockquote>
+<blockquote>
+<p>ieodomkazucvgmuy is naughty because it has a repeating letter with one between (odo), but no pair that appears twice.</p>
+</blockquote>
+<p>How many strings are nice under these new rules?</p>
+<h3 id="thoughts-1"><a class="header" href="#thoughts-1">Thoughts</a></h3>
+<p>I agree that the first set of ruls was ridiculous, but I am not sure I am a fan of the new rules...</p>
+<p>The first rules is tricky beause they cannot overlap. For example, if I kept a hashmap of each pair of a string, then <code>aaa</code> would count as 2 pairs. And <code>aaaa</code> should count as 2 pairs, but how do you know that they are not overlapping? You cannot split them by even and odd indices because the first pair may be one an even index while the second pair is on an odd index.</p>
+<p>I am going to have to continue thinking about this.</p>
+<p>The second condition is more straight forward. It is asking if the current character is equal to the character that appeared 2 indices ago. That is only slightly different than the <code>prev_char</code> in part 1. In thoery, you can use the <code>prev_char</code> result to setup a match for <code>prev_prev_char</code> and then do the check there (LOL). I'll probably write it up that way because thinking about it makes me giggle.</p>
+<p>Alright, I need to figure out rule 1.</p>
+<p>What do I know:</p>
+<ul>
+<li>I know I can use a hashmap to do a seen check on the pairs.</li>
+<li>I also know that the "no overlap" is currently an issue that I need to overcome.</li>
+</ul>
+<p>How do I prevent overlap?</p>
+<ul>
+<li>
+<p>I could have a second hashmap to keep track of the indices? For example, take
+<code>xyxy</code>. When we see <code>xy</code> for the first time, one hashmap will keep a count seens, which will get set to one and the other will keep an array of indices where this has been seen (current entry being (0,1)). Then, when the second <code>xy</code> comes along, we can check the hashmap to array first and verify that the previous <code>xy</code> has different indices before sending it to the hashmap count to up the count. Though I think this will work, it sounds like too much work for this problem..</p>
+</li>
+<li>
+<p>For an overlap to exist, the previous char must be equal to the current char, right? Maybe I can take advantage of that. I can keep track of the <code>prev_char</code> and the <code>prev_prev_char</code>. If <code>prev_prev_char</code> is None, and the <code>prev_char</code> is <code>a</code>... I might need a <code>prev_prev_prev_char</code> for this so that I have 4 chars that I can compare against because if all 4 are <code>a</code>, then we have <code>aaa</code> and that is fine. If we have <code>None, aaa</code>, then we know we have overlap.</p>
+</li>
+</ul>
+<p>The seconds approach sounds more straight forward, but only of you have the chars on an array where you can use the index to explicitly previous chars...</p>
+<p>I guess that makes sense. I can convert the line to an Vec<chars> and then iterate over the Vec. I will have access to the index and for rule 2, I can check to if index i and index i-2 are the same char. For rule one, if the current char and the previous char are equal, then I can check the two character before that and if they are all eqal, it is not an overlap.</p>
+<p>I think this will work. Let me try writing it up.</p>
+<pre><pre class="playground"><code class="language-rust">use std::collections::HashMap;
+use std::io;
+
+fn main() {
+    let mut nice_words_count = 0;
+
+    for line in io::stdin().lines() {
+        let vec_chars: Vec&lt;char&gt; = line.unwrap().chars().collect();
+
+        let mut index = 1;
+        let mut doubles_count = HashMap::new();
+        let mut char_repeat_count = 0;
+
+        for character in vec_chars[1..].iter() {
+            if index &gt;= 2 {
+                if vec_chars[index - 2].eq(character) {
+                    char_repeat_count += 1;
+                }
+            }
+
+            match index {
+                1 =&gt; {
+                    doubles_count
+                        .entry(format!("{}{}", vec_chars[index - 1], vec_chars[index]))
+                        .and_modify(|count| *count += 1)
+                        .or_insert(1);
+                }
+                2 =&gt; {
+                    if vec_chars[index - 1].eq(character) &amp;&amp; vec_chars[index - 2].eq(character) {
+                    } else {
+                        doubles_count
+                            .entry(format!("{}{}", vec_chars[index - 1], vec_chars[index]))
+                            .and_modify(|count| *count += 1)
+                            .or_insert(1);
+                    }
+                }
+                x if x &gt;= 3 =&gt; {
+                    if vec_chars[index - 1].eq(character) &amp;&amp; vec_chars[index - 2].eq(character) {
+                        if vec_chars[index - 3].eq(character) {
+                            doubles_count
+                                .entry(format!("{}{}", vec_chars[index - 1], vec_chars[index]))
+                                .and_modify(|count| *count += 1)
+                                .or_insert(1);
+                        }
+                    } else {
+                        doubles_count
+                            .entry(format!("{}{}", vec_chars[index - 1], vec_chars[index]))
+                            .and_modify(|count| *count += 1)
+                            .or_insert(1);
+                    }
+                }
+                _ =&gt; {}
+            }
+
+            index += 1;
+        }
+
+        if char_repeat_count &gt;= 1 &amp;&amp; doubles_count.values().any(|&amp;x| x &gt; 1) {
+            nice_words_count += 1;
+        }
+
+        println!(
+            "nice_words_count: {}, char repeat count: {}, doubles count: {:?}",
+            nice_words_count, char_repeat_count, doubles_count
+        );
+    }
+}</code></pre></pre>
+<p>That actually went much smoother than I expected it to go! When writing it up, I realized that I did not need the first index of the <code>vec_chars</code>, so I created a slice of it that goes from index 1 to the end and iterated over that. This meant that I could note use <code>enumerate</code> to manage the index for me, which was fine.</p>
+<p>I then used a match statement to manage the different cases that I was talking about before for rule 1. If the index is 1, then there are only 2 chars so overlap is not possible. If the index is 2, then there are 3 chars. Overlap is now possible, so you have to make sure that all three chars are not the same value (Note: I think I wrote the case compliment if statements because it is easier for me to think about when I want to act as appose to when I don't want to act, but I probably could have gotten away with a simpler conditional if I did it the other way... I may change it...). If the index is 3, then there are 4 chars which means that have to check the <code>aaaa</code> and <code>baaa</code> cases.</p>
+<p>One thing that is cool about the HashMap is that we have the <a href="https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.entry">Entry API</a>, which allows me to create an entry counter in one line via defining what I want to happen for new entry and what I want to happen for existing entries.</p>
+<p>With regard to Rust, I can say that today was the first time I used the <code>any</code> method that is defined for iterators. It is pretty cool and useful that that HashMap <code>values</code> method returns a type (The the is Values) that implements and iterator.</p>
+<p>Note: I updated the <code>match</code> index == 2 <code>if</code> check. It is much easier to read now.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../advent_of_code/2015/day_4.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../advent_of_code/2015/day_6.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../advent_of_code/2015/day_4.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../advent_of_code/2015/day_6.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

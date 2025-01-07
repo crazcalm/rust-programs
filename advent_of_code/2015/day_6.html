@@ -1,0 +1,385 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 6 - Rust Programs</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust Programs</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day-6-probably-a-fire-hazard"><a class="header" href="#day-6-probably-a-fire-hazard">Day 6: Probably a Fire Hazard</a></h1>
+<p>Because your neighbors keep defeating you in the holiday house decorating contest year after year, you've decided to deploy one million lights in a 1000x1000 grid.</p>
+<p>Furthermore, because you've been especially nice this year, Santa has mailed you instructions on how to display the ideal lighting configuration.</p>
+<p>Lights in your grid are numbered from 0 to 999 in each direction; the lights at each corner are at 0,0, 0,999, 999,999, and 999,0. The instructions include whether to turn on, turn off, or toggle various inclusive ranges given as coordinate pairs. Each coordinate pair represents opposite corners of a rectangle, inclusive; a coordinate pair like 0,0 through 2,2 therefore refers to 9 lights in a 3x3 square. The lights all start turned off.</p>
+<p>To defeat your neighbors this year, all you have to do is set up your lights by doing the instructions Santa sent you in order.</p>
+<p>For example:</p>
+<blockquote>
+<p>turn on 0,0 through 999,999 would turn on (or leave on) every light.</p>
+</blockquote>
+<blockquote>
+<p>toggle 0,0 through 999,0 would toggle the first line of 1000 lights, turning off the ones that were on, and turning on the ones that were off.</p>
+</blockquote>
+<blockquote>
+<p>turn off 499,499 through 500,500 would turn off (or leave off) the middle four lights.</p>
+</blockquote>
+<p>After following the instructions, how many lights are lit?</p>
+<h3 id="thoughts"><a class="header" href="#thoughts">Thoughts</a></h3>
+<p>This seems like a mini parser... We have strings like <code>turn on 0,0 through 999,999</code>, which are <code>&lt;command&gt; &lt;start_coordinates&gt; through &lt;end_coordinates&gt;</code>.</p>
+<p>I don't think I want to write a parser though, so lets split the words up by white space.</p>
+<p>Command:</p>
+<ul>
+<li>turn on</li>
+<li>turn off</li>
+<li>toggle</li>
+</ul>
+<p>The coordindates can be split by <code>,</code> to get the x and y.</p>
+<p>I need to think about th lights situation. I am thinking about making them an enum.</p>
+<p>Enum:</p>
+<ul>
+<li>on</li>
+<li>off</li>
+</ul>
+<p>Enum Methods:</p>
+<ul>
+<li>turn on</li>
+<li>tun off</li>
+<li>toggle</li>
+</ul>
+<p>Then the grid will be a 2 dimensional Vec filled with my enums. I can iterate over it and call the appropriate method.</p>
+<p>Speaking of iteration, I need to be able to figure out the start and stop of my iterations...</p>
+<p>Lets say, they give me 2,4 through 5,6. This means that I from 2,4 to 2,999, the to 3,0 to 3,999, 4,0 to 4,999, then 5,0 to 5,6. Wait, I don't think I read that properly...</p>
+<blockquote>
+<p>Each coordinate pair represents opposite corners of a rectangle, inclusive; a coordinate pair like 0,0 through 2,2 therefore refers to 9 lights in a 3x3 square. The lights all start turned off.</p>
+</blockquote>
+<p>Opposite corners! So 0,0 through 2,2 is 0,0 | 0,1 | 1,2 | 1,0 | 1,1 | 1,2 | 2,0 | 2,1 | 2,2.</p>
+<p>This means that 2,4 through 5,6 is 2,4 | 2,5 | 2,6 | 3,4 | 3,5 | 3,6 | 4,4 | 4,5 | 4,6 | 5,4 | 5,5 | 5,6.</p>
+<p>In the above cases 2..=5, 4..=6.</p>
+<p>Note:
+I thing the coordinates are (y, x) in the above case because <code>Vec[y][x]</code>, but, since we only care about the number of lights on, I think I can get away with using <code>Vec[x][y]</code>.</p>
+<p>They are giving us opposite corners of the rectangle. All of the example are bottom left corner to top right corner, but I do not know if all the inputs are these corners in this order.</p>
+<ul>
+<li>I took a quick glance at the inputs, and I think they are all bottom left to top right.</li>
+</ul>
+<p>This means that I can for like:</p>
+<pre><code>for x in 2..=5:
+  for y in 4..=6:
+     vec[x][y] = vec[x][y].&lt;command&gt;
+</code></pre>
+<p>I will try to write it up, but it is getting late, so I do not know if I will finish it tonight.</p>
+<pre><pre class="playground"><code class="language-rust">use std::io;
+
+enum Light {
+    On,
+    Off,
+}
+
+impl Light {
+    fn new() -&gt; Self {
+        Light::Off
+    }
+
+    fn toggle(&amp;self) -&gt; Self {
+        match self {
+            Light::On =&gt; Light::Off,
+            Light::Off =&gt; Light::On,
+        }
+    }
+
+    fn turn_on(&amp;self) -&gt; Self {
+        Light::On
+    }
+
+    fn turn_off(&amp;self) -&gt; Self {
+        Light::Off
+    }
+}
+
+fn parse(data: &amp;Vec&lt;&amp;str&gt;) -&gt; (String, (usize, usize), (usize, usize)) {
+    let len = data.len();
+
+    let mut command = data[0].to_string();
+    if len == 5 {
+        command = format!("{} {}", data[0], data[1]);
+    }
+
+    let start: Vec&lt;usize&gt; = data[len - 3]
+        .to_string()
+        .as_str()
+        .split(",")
+        .map(|x| x.parse().unwrap())
+        .collect();
+    let end: Vec&lt;usize&gt; = data[len - 1]
+        .to_string()
+        .as_str()
+        .split(",")
+        .map(|x| x.parse().unwrap())
+        .collect();
+
+    return (command, (start[0], start[1]), (end[0], end[1]));
+}
+
+fn create_grid() -&gt; Vec&lt;Vec&lt;Light&gt;&gt; {
+    let mut vec_1 = Vec::with_capacity(999);
+    for _ in 0..=999 {
+        let mut vec_2 = Vec::with_capacity(999);
+
+        for _ in 0..=999 {
+            vec_2.push(Light::new());
+        }
+        vec_1.push(vec_2);
+    }
+
+    return vec_1;
+}
+
+fn change_lights(
+    command: String,
+    data: &amp;mut Vec&lt;Vec&lt;Light&gt;&gt;,
+    coord_1: (usize, usize),
+    coord_2: (usize, usize),
+) {
+    for x in coord_1.0..=coord_2.0 {
+        for y in coord_1.1..=coord_2.1 {
+            if command.eq(&amp;"turn on") {
+                data[x][y] = data[x][y].turn_on();
+            } else if command.eq(&amp;"turn off") {
+                data[x][y] = data[x][y].turn_off();
+            } else if command.eq(&amp;"toggle") {
+                data[x][y] = data[x][y].toggle();
+            }
+        }
+    }
+}
+
+fn main() {
+    let mut grid = create_grid();
+    for line in io::stdin().lines() {
+        let data = line.unwrap();
+        let data: Vec&lt;&amp;str&gt; = data.split(" ").collect();
+
+        println!("data: {:?} ", data);
+        let (command, coord_1, coord_2) = parse(&amp;data);
+        println!("{} {:?} {:?}", command, coord_1, coord_2);
+
+        change_lights(command, &amp;mut grid, coord_1, coord_2);
+    }
+
+    // How many lights are on
+    let mut count = 0;
+    for row in grid.iter() {
+        for light in row.iter() {
+            match light {
+                Light::On =&gt; count += 1,
+                _ =&gt; {}
+            }
+        }
+    }
+
+    println!("{} lights are on", count);
+}</code></pre></pre>
+<p>It took longer than I thought to write, but it wasn't that bad. To make the program less confusing, I decided to keep the coordinates as (x1, y1), (x2, y2). Outside of that, some annoying things were:</p>
+<ul>
+<li>Indecing on a Vec&lt;&amp;str&gt;.
+<ul>
+<li>In Rust, we cannot use negative indexes to get the items of that end of the Vec</li>
+</ul>
+</li>
+<li>Parsing the coordinates:
+<ul>
+<li>I had to make sure their type was usize so that I can use them when indexing the grid.</li>
+<li>Also, the long string of methods I used to actually parse the &amp;str to usize was annoying. Cloning &amp;str clones the pointer and not the value, so I converted to a String, but Strings do not have a split method. So I converted the String to str and then did the split and parse.</li>
+</ul>
+</li>
+<li>The program is long! I did not like how long this is.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../advent_of_code/2015/day_5.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../advent_of_code/2015/day_5.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
