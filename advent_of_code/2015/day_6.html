@@ -337,6 +337,138 @@ fn main() {
 </li>
 <li>The program is long! I did not like how long this is.</li>
 </ul>
+<h2 id="the-problem-part-2"><a class="header" href="#the-problem-part-2">The Problem Part 2</a></h2>
+<p>You just finish implementing your winning light pattern when you realize you mistranslated Santa's message from Ancient Nordic Elvish.</p>
+<p>The light grid you bought actually has individual brightness controls; each light can have a brightness of zero or more. The lights all start at zero.</p>
+<p>The phrase turn on actually means that you should increase the brightness of those lights by 1.</p>
+<p>The phrase turn off actually means that you should decrease the brightness of those lights by 1, to a minimum of zero.</p>
+<p>The phrase toggle actually means that you should increase the brightness of those lights by 2.</p>
+<p>What is the total brightness of all lights combined after following Santa's instructions?</p>
+<p>For example:</p>
+<blockquote>
+<p>turn on 0,0 through 0,0 would increase the total brightness by 1.</p>
+</blockquote>
+<blockquote>
+<p>toggle 0,0 through 999,999 would increase the total brightness by 2000000.</p>
+</blockquote>
+<h3 id="thoughts-1"><a class="header" href="#thoughts-1">Thoughts</a></h3>
+<p>I actually think this is easier than part one. I don't need an enum anymore. I can have a regular struct that has an internal counter that goes up and down with a min value of zero. And the structure of the program is identical to the first one.</p>
+<p>I am going to try to write this up quickly and move on to my next task for the night.</p>
+<pre><pre class="playground"><code class="language-rust">use std::io;
+
+struct Light {
+    brightness: usize,
+}
+
+impl Light {
+    fn new() -&gt; Self {
+        Self { brightness: 0 }
+    }
+
+    fn brightness(&amp;self) -&gt; usize {
+        self.brightness
+    }
+
+    fn toggle(&amp;mut self) {
+        self.brightness += 2;
+    }
+
+    fn turn_on(&amp;mut self) {
+        self.brightness += 1;
+    }
+
+    fn turn_off(&amp;mut self) {
+        match self.brightness {
+            0 =&gt; {}
+            _ =&gt; self.brightness -= 1,
+        };
+    }
+}
+
+fn parse(data: &amp;Vec&lt;&amp;str&gt;) -&gt; (String, (usize, usize), (usize, usize)) {
+    let len = data.len();
+
+    let mut command = data[0].to_string();
+    if len == 5 {
+        command = format!("{} {}", data[0], data[1]);
+    }
+
+    let start: Vec&lt;usize&gt; = data[len - 3]
+        .to_string()
+        .as_str()
+        .split(",")
+        .map(|x| x.parse().unwrap())
+        .collect();
+    let end: Vec&lt;usize&gt; = data[len - 1]
+        .to_string()
+        .as_str()
+        .split(",")
+        .map(|x| x.parse().unwrap())
+        .collect();
+
+    return (command, (start[0], start[1]), (end[0], end[1]));
+}
+
+fn create_grid() -&gt; Vec&lt;Vec&lt;Light&gt;&gt; {
+    let mut vec_1 = Vec::with_capacity(999);
+    for _ in 0..=999 {
+        let mut vec_2 = Vec::with_capacity(999);
+
+        for _ in 0..=999 {
+            vec_2.push(Light::new());
+        }
+        vec_1.push(vec_2);
+    }
+
+    return vec_1;
+}
+
+fn change_lights(
+    command: String,
+    data: &amp;mut Vec&lt;Vec&lt;Light&gt;&gt;,
+    coord_1: (usize, usize),
+    coord_2: (usize, usize),
+) {
+    for x in coord_1.0..=coord_2.0 {
+        for y in coord_1.1..=coord_2.1 {
+            if command.eq(&amp;"turn on") {
+                data[x][y].turn_on();
+            } else if command.eq(&amp;"turn off") {
+                data[x][y].turn_off();
+            } else if command.eq(&amp;"toggle") {
+                data[x][y].toggle();
+            }
+        }
+    }
+}
+
+fn main() {
+    let mut grid = create_grid();
+    for line in io::stdin().lines() {
+        let data = line.unwrap();
+        let data: Vec&lt;&amp;str&gt; = data.split(" ").collect();
+
+        println!("data: {:?} ", data);
+        let (command, coord_1, coord_2) = parse(&amp;data);
+        println!("{} {:?} {:?}", command, coord_1, coord_2);
+
+        change_lights(command, &amp;mut grid, coord_1, coord_2);
+    }
+
+    // How many lights are on
+    let mut count = 0;
+    for row in grid.iter() {
+        for light in row.iter() {
+            count += light.brightness;
+        }
+    }
+
+    println!("The total brightness of the lights is {}", count);
+}</code></pre></pre>
+<p>The changes were so minor that this win doesn't feel like it counts. I changed the enum to a struct and updated the methods to do the brightness thing. I also added a new method get the current brightness level, but my counter is of type usize, so I don't have to worry about the borrow checker. Anyway, since I kept the name <code>Light</code> when I made the change from enum to struct, all the type checking and setup remained valid.
+The next thing I changes was in the <code>change_lights</code> function, and all I had to do was call the <code>turn_on</code>, <code>turn_off</code>, and <code>toggle</code> method on the <code>Lights</code>.</p>
+<p>Lastly, I changed how I do the counting at the end of the program. Then I updated the last print statement for kicks.</p>
+<p>This feels like the part 2 was way too easy when compared to the part 1, but its probably the case that I made part 1 more complicated than it needed to be. I used an enum when 0, 1 and a few if statements would have worked. If that was my starting point, then part 2 would have been a lot more difficult than part 2.</p>
 
                     </main>
 
