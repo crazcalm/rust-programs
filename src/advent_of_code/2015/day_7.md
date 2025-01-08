@@ -214,6 +214,10 @@ At the end of the program. I try to process the "still need to process" items ov
 
 This was pretty painful. I made silly mistakes, like not understand that the commands are coming out of order. Post that, I made a bunch of small programming errors in the `needed_vars_set` function that led to infinite loops.
 
+Also, I changed the "process old commands" approach. I decided that it would be easier to parse the command and find all the variables list in in, then check to see of those variables are set. If they are set, then I process the command. If they are not set, I store that command in a list and try processing it again later.
+
+Once I got to the part where I am only processing old commands, I used the same exact approach again to re-process everything. The main difference is that this time i put it into a while loop and kept repeating the process until all the commands were processed.
+
 All in all, I am really glad that I took time to think through the parts of the problem I did understand correctly. I think that if I were confused by any of the bitwise operations or the initial line parsing, I would have made so many mistakes that I would have given up out of frustration.
 
 
