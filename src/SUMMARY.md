@@ -9,7 +9,7 @@
 	  - [Day 4](./advent_of_code/2015/day_4.md)
 	  - [Day 5](./advent_of_code/2015/day_5.md)
 	  - [Day 6](./advent_of_code/2015/day_6.md)
-	  - [Day 7]()
+	  - [Day 7](./advent_of_code/2015/day_7.md)
 	  - [Day 8]()
 	  - [Day 9]()
 	  - [Day 10]()
