@@ -32,4 +32,43 @@ I am not sure of quick way of solving this that is not brute force pattern match
 
 The cases seem to be:
 - String with characters
+  - Char count + 2
 - String with characters and esc
+  - Char count + 2 + 1 for each escaped character
+- Hex String
+  - ???
+  - I am not sure if each Hex is 6 characters and I am not sure if `chars` will the Hex in pieces or the string presentations...
+  
+  
+  Come to think about it, the escape char list may pose a problem. `""` is fine, but `\\` in a string could prove troublesome because it overlaps with Hex. So, for "\\x27", is the string 2 chars (`\'`) or 7/8 chars?
+  
+  Meh. I guess I will find out.
+  
+  #### Thoughts post some investigation
+  
+  I think I was wrong about this problem. All the input will come in as strings and I need to deduce which parts of it count as part of the string.
+  
+  For example, if "/x27" comes in, I need to be able to identify that is ti a hex value. Hex values are seemingly single chars, so should have a string count of 1 and a character count of 6.
+  
+  For the escape characters, I need to figure out what counts as a escaped character. So, "/'", "/"" and "//" all count. 
+  
+  So, if the string is not a Hex, then I can do a 2 character check to see if the string has escaped characters.
+  
+  Also, all of the inputs are in quotes, so calling "data.len()" when data is `""` will give me 2.
+  This means that I am litary scanning the string trying to decide what the string number should be for all of these. lol
+  
+  Notes:
+  - all strings shoulf be of length 2 or greater.
+  - If hex, then the string count is 1
+  - If not hex, minus 1 for every `/` in string?
+  
+  I don't know if this is right, but I can try ti write it up and test it against the test case.
+  
+  I am not done, but I have to step away to do something. Anyway, one thing I overlooked is that hex are located within of the string.
+  
+  For example, `"\x5em\"squulpy"` starts with a hex and then there is the rest of the string. So (I think) `\x5e` should count as 1 string char.
+  
+  I think this means that if I see `\x` in the string, I should subtract 3 (this is because 4 chars become 1).
+  
+  Now I am over counting the somewhere. Though I would like to continue, I have to go.
+
