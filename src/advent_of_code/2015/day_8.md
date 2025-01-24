@@ -58,17 +58,88 @@ The cases seem to be:
   This means that I am litary scanning the string trying to decide what the string number should be for all of these. lol
   
   Notes:
-  - all strings shoulf be of length 2 or greater.
+  - all strings should be of length 2 or greater.
   - If hex, then the string count is 1
   - If not hex, minus 1 for every `/` in string?
   
-  I don't know if this is right, but I can try ti write it up and test it against the test case.
+  I don't know if this is right, but I can write it up and test it against the test case.
   
-  I am not done, but I have to step away to do something. Anyway, one thing I overlooked is that hex are located within of the string.
+  #### Mistakes
+  1. I miss interpreted the problem. The hex code can be found within the string at any point in time. For example, `"\x5em\"squulpy"` starts with a hex and then there is the rest of the string. So (I think) `\x5e` should count as 1 string char, but this could have been `"y\x5em\"squulp"`.
   
-  For example, `"\x5em\"squulpy"` starts with a hex and then there is the rest of the string. So (I think) `\x5e` should count as 1 string char.
-  
-  I think this means that if I see `\x` in the string, I should subtract 3 (this is because 4 chars become 1).
-  
-  Now I am over counting the somewhere. Though I would like to continue, I have to go.
+  2. Over counting. In my first implementation, I did not consider the case `\\\x5e`, which is `\\` + `\x5e`. So the mistake I made was iterating over the it character by character, when really I needed to skip ahead to account for escaped characters that I have already counted.
 
+
+### Solution
+  ```rust
+  {{ #include ../../../advent_of_code/2015/day_8/src/main.rs }}
+  ```
+
+The code it pretty ugly. That aside, the print statements gave me a ton of audit information. Without that, I definitely would not have solve this one tonight.
+
+Anyway, the trick to solving this problem is understanding the window you are looking at. I choose the window of two characters, the current one and the previous one. I took the approach of counting the escaped characters and adding 2 to the for the quotes (Note: When I iterate over the Vec<char>, i shrunk the bounds to leave out the start and end quotes).
+
+For the while loop, lets examine `aa\\\x5em`:
+
+> My first pair is `aa`. Nothing happens here, so we increment the index by one.
+
+> Next is `a\`. Nothing again. Increment by 1.
+
+> Next is `\\`. We have an escaped backslash. Increment by two to prevent double counting.
+
+> Next is `\x`. We have the start of a hex code. These are exactly 4 characters, so we increment by 4.
+
+The index is not out of bound, so we stop the count. It should be noted that the `m` was never looked at, but you need at least 2 characters for an escape, so not looking at it is fine.
+
+Here is example output that shows why I found the print statements so helpful (It was kind of hard to read it as a code block, so I quoted each line of the output).
+
+> "" - Char count: 2 - Escaped count: 0 - Diff (char - eascped - 2 = string count) 0
+
+> "abc" - Char count: 5 - Escaped count: 0 - Diff (char - eascped - 2 = string count) 3
+
+> "aaa\"aaa" - Char count: 10 - Escaped count: 1 - Diff (char - eascped - 2 = string count) 7
+
+> "\x27" - Char count: 6 - Escaped count: 3 - Diff (char - eascped - 2 = string count) 1
+
+> "\\\x5em\"squulpy" - Char count: 18 - Escaped count: 5 - Diff (char - eascped - 2 = string count) 11
+
+> Chars: 41, Strings: 22, Diff: 19
+
+## The Problem Part 2
+
+--- Part Two ---
+
+Now, let's go the other way. In addition to finding the number of characters of code, you should now encode each code representation as a new string and find the number of characters of the new encoded representation, including the surrounding double quotes.
+
+For example:
+
+> "" encodes to "\"\"", an increase from 2 characters to 6.
+> "abc" encodes to "\"abc\"", an increase from 5 characters to 9.
+> "aaa\"aaa" encodes to "\"aaa\\\"aaa\"", an increase from 10 characters to 16.
+> "\x27" encodes to "\"\\x27\"", an increase from 6 characters to 11.
+
+Your task is to find the total number of characters to represent the newly encoded strings minus the number of characters of code in each original string literal. For example, for the strings above, the total encoded length (6 + 9 + 16 + 11 = 42) minus the characters in the original code representation (23, just like in the first part of this puzzle) is 42 - 23 = 19.
+
+### Thoughts
+
+It is 2 am, I'm tired, and I should go to bed, but this looks simplier that part 1.
+
+> Each line gets a plus 2 because we have new quotes.
+
+I iterate over each char and add 1 everytime I see a `"` of a `\`. This accounts for the new escapes. To get the new size, we `characters.len() + new_escapes + 2 (for the new quotes)`.
+
+
+> "" => characters.len() + new_escapes + new_qoutes = 2 + 2 + 2 = 6
+
+> "abc" => 5 + 2 + 2 = 9
+
+> "aaa\"aaa" => 10 + 4 + 2 = 16
+
+> "\x27" => 6 + 3 + 2 = 11
+
+### Solution Part 2
+  ```rust
+  {{ #include ../../../advent_of_code/2015/day_8_part_2/src/main.rs }}
+  ```
+
+This was definitely much easier than part 1.
