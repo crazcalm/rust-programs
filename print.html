@@ -1582,6 +1582,295 @@ fn main() {
   );
 }</code></pre></pre>
 <p>This was definitely much easier than part 1.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="day-9-all-in-a-single-night"><a class="header" href="#day-9-all-in-a-single-night">Day 9: All in a Single Night</a></h1>
+<p><a href="https://adventofcode.com/2015/day/9">link to problem</a></p>
+<h2 id="the-problem-8"><a class="header" href="#the-problem-8">The Problem</a></h2>
+<p>Every year, Santa manages to deliver all of his presents in a single night.</p>
+<p>This year, however, he has some new locations to visit; his elves have provided him the distances between every pair of locations. He can start and end at any two (different) locations he wants, but he must visit each location exactly once. What is the shortest distance he can travel to achieve this?</p>
+<p>For example, given the following distances:</p>
+<pre><code>London to Dublin = 464
+London to Belfast = 518
+Dublin to Belfast = 141
+</code></pre>
+<p>The possible routes are therefore:</p>
+<pre><code>Dublin -&gt; London -&gt; Belfast = 982
+London -&gt; Dublin -&gt; Belfast = 605
+London -&gt; Belfast -&gt; Dublin = 659
+Dublin -&gt; Belfast -&gt; London = 659
+Belfast -&gt; Dublin -&gt; London = 605
+Belfast -&gt; London -&gt; Dublin = 982
+</code></pre>
+<p>The shortest of these is <code>London -&gt; Dublin -&gt; Belfast = 605</code>, and so the answer is 605 in this example.</p>
+<p>What is the distance of the shortest route?</p>
+<h3 id="thoughts-16"><a class="header" href="#thoughts-16">Thoughts</a></h3>
+<p>These problems always scare me because I suck at them. In Python, I would use <a href="https://docs.python.org/3/library/itertools.html#itertools.permutations">itertools.permutations</a> to get the list of distinct possible routes, sum them up and keep the lowest value, but I don't have that function in Rust. The Python docs have and example of how to write the algorthim and I am hesitant to transcribe it to Rust because I do not fully understand (and will most likely make a mistake...).</p>
+<p>I know that this is a simple problem. I know that combinatorially their are <code>n!/2</code> options. <code>n!</code> because you have <code>n</code> options for the first place and <code>n-1</code> options for the next, and so on. You divide by <code>2</code> because, with reference to this problem, going forward and going backwards gives you the same value. So in there example, we had 3 options, which leads to 3! (6) total permutations, but half of these permuations give identical results.</p>
+<p>The input file only has 7 options. <code>7!</code>. I was going to say that <code>7!/2</code> was small enough to do by hand, but then I opened up a calculator and discovered thats <code>2,520</code> options...</p>
+<p>Okay, maybe my anxiety was justified.</p>
+<p>Anyway, I have thought about cheap ways of solving the problem. I could use a random number generator randomize the travel list and then compute the sums. If I did this enough times, say 10,000 time, I would definitely get the correct answer.</p>
+<p>To me, casually throwing my vague understanding of dynamic programming at this problem seems like it would undermine my goals here, which are to learn.</p>
+<p>Breath in, breath out and lets think about this.</p>
+<h3 id="thoughts-after-calming-down"><a class="header" href="#thoughts-after-calming-down">Thoughts after calming down</a></h3>
+<p>Let's answer some basic stuff first.</p>
+<h4 id="how-do-i-want-to-represent-the-data"><a class="header" href="#how-do-i-want-to-represent-the-data">How do I want to represent the data?</a></h4>
+<p>These seems like dictionaries. My London dictionary will have keys for Dublin and Beldfast.</p>
+<pre><code> london = {"dublin": 464, "belfast": 518}
+ dublin = {"london": 464, "belfast": 141}
+ belfast = {"london": 518, "dublin": 141}
+</code></pre>
+<p>The above should probably be in a dictionary too so that it can be easily referenced.</p>
+<pre><code> distances = {
+   "london": {"dublin": 464, "belfast": 518},
+   "dublin": {"london": 464, "belfast": 141},
+   "belfast": {"london": 518, "dublin": 141},
+ }
+</code></pre>
+<p>Now, if I was iterating over a list like <code>["dublin", "london", "belfast"]</code>, I would start at index 0 and 1 like <code>distances[index_0][index_1]</code>, which is <code>distances['dubline']['london'] = 464</code>.</p>
+<p>This representation makes sense to me bacause it makes the distance reference easy.</p>
+<h3 id="generating-the-permutations"><a class="header" href="#generating-the-permutations">Generating the permutations</a></h3>
+<p>The first question I should ask is, do I have to do this? I believe the answer is yes, but I want to take a few minutes and brainstorm if there are other ways to approach this problem.</p>
+<p>There is the min distance subset approach where I pick a location and then find the shortest distance to the another location and then pick that location. This process repeats till you get to the end location. Then, you change your start location and try again.</p>
+<p>Given that forward a backwards are the same, the swapping of starting locations should help with the pigeon hole issue of placing a extremely far distance at the end of the list because there are no other options left. The reason this will help is because when one of those two locations with that extremely far distance is the starting point, it will never pair with that far away place.</p>
+<p>The more I think about it, the more this "min max solution" sounds promising.</p>
+<p>I do not have time to write this up now, but I think these are the steps.</p>
+<h4 id="steps"><a class="header" href="#steps">Steps:</a></h4>
+<ul>
+<li>Parse file to create my <code>Dict[str: Dict[str: int]]</code></li>
+<li>Iterate over the keys of the top level dict to get my starting points.</li>
+<li>Then I have my min max loop process.
+<ul>
+<li>Find the shortest distance to the next place.</li>
+<li>Put that location in the <code>seen</code> set. (Note: the starting location should be in this set already)</li>
+<li>Start from that next place and find the closest place that is not in the seen set</li>
+<li>Repeat till size of seen set is equal to the number of locations.</li>
+<li>Save that value (and the path for audit purposes) and move on to the next start point.</li>
+</ul>
+</li>
+<li>Take the samest distanced travelled and hope that is the solution.</li>
+</ul>
+<p>I will be really happy if this works, but I will not be able to find that out today.</p>
+<h3 id="solution-2"><a class="header" href="#solution-2">Solution</a></h3>
+<pre><pre class="playground"><code class="language-rust">use std::collections::{HashMap, HashSet};
+use std::io;
+
+fn update_distances(
+    mut distances: HashMap&lt;String, HashMap&lt;String, usize&gt;&gt;,
+    start: String,
+    end: String,
+    distance: usize,
+) -&gt; HashMap&lt;String, HashMap&lt;String, usize&gt;&gt; {
+    match distances.contains_key(&amp;start) {
+        false =&gt; {
+            let mut temp = HashMap::new();
+            temp.insert(end.clone(), distance.clone());
+            distances.insert(start.clone(), temp);
+        }
+        true =&gt; {
+            if let Some(data) = distances.get_mut(&amp;start) {
+                data.insert(end.clone(), distance.clone());
+            }
+        }
+    }
+
+    distances
+}
+
+fn create_data_structure(
+    mut distances: HashMap&lt;String, HashMap&lt;String, usize&gt;&gt;,
+) -&gt; HashMap&lt;String, HashMap&lt;String, usize&gt;&gt; {
+    for line in io::stdin().lines() {
+        let data = line.unwrap();
+        let data: Vec&lt;String&gt; = data.split(" ").map(|x| x.to_string()).collect();
+
+        let (start, end, distance) = (data[0].clone(), data[2].clone(), data[4].clone());
+        let distance: usize = distance.parse().unwrap();
+
+        // updating the map
+        distances = update_distances(distances, start.clone(), end.clone(), distance.clone());
+        distances = update_distances(distances, end.clone(), start.clone(), distance.clone());
+        println!("{start} {end} {distance}");
+    }
+
+    distances
+}
+
+fn closest_distance(
+    map: &amp;HashMap&lt;String, usize&gt;,
+    seen: &amp;HashSet&lt;String&gt;,
+) -&gt; Option&lt;(String, usize)&gt; {
+    let mut result = None;
+    let mut min = 1000;
+    for (loc, dis) in map.iter() {
+        if !seen.contains(loc) {
+            if dis &lt; &amp;min {
+                min = dis.clone();
+                result = Some((loc.to_string(), dis.clone()));
+            }
+        }
+    }
+    result
+}
+
+fn main() {
+    let mut distances: HashMap&lt;String, HashMap&lt;String, usize&gt;&gt; = HashMap::new();
+    distances = create_data_structure(distances);
+
+    let mut shortest_distance = 10000;
+    for (start, map) in distances.iter() {
+        print!("Start {start} -&gt; ");
+
+        let mut current_loc = start.clone();
+        let mut current_map = map;
+        let mut total = 0;
+        let mut seen = HashSet::new();
+        while seen.len() &lt; map.len() {
+            seen.insert(current_loc.clone());
+            match closest_distance(current_map, &amp;seen) {
+                None =&gt; {}
+                Some((loc, dis)) =&gt; {
+                    total += dis;
+                    print!("{loc} ({total}) -&gt; ");
+
+                    current_loc = loc;
+                    current_map = distances.get(&amp;current_loc).unwrap()
+                }
+            }
+        }
+        if total &lt; shortest_distance {
+            shortest_distance = total;
+        }
+        println!("\n");
+    }
+
+    println!("{}", shortest_distance);
+}</code></pre></pre>
+<p>I fumbled through this, but I kept the outline steps I wrote in my heads and used it as a guiding star until I completed the implementation.</p>
+<p>If you look at <code>fn main</code>, I start off creating the data structure I want, which is the nested HashMap that we talked about. I then have a function called <code>create_data_structure</code>, which fills in the data for the nested map (just like we talked about).</p>
+<p>Everything after this point is related to the min-max loop that we are going to use to find the closest distance.</p>
+<p>I create a variable called <code>shortest_distance</code> that will hold the the final answer. I initialize it to a way too big number so that it will replaced by the first total distances we get.</p>
+<p>For the loop, I iterate of the outer HashMap. This will give use our starting location and the map all the other locations with their distances from the starting location.</p>
+<p>We copy these items to variables called <code>current_loc</code> and <code>current_map</code>. These values will get updated as we travel. For example, if was start at London and then travel to Belfast, our new current location is Belfast, which means that our new current map should be the Belfast map that have all of the locations and distances relative to Belfast.</p>
+<p>In order to make sure we do not travel to the same location twice, we create a <code>seen</code> HashSet use to track the locations that we have been to.</p>
+<p>So the process is:</p>
+<ul>
+<li>We start at a location (set this to current location)
+<ul>
+<li>We add our current location the seen</li>
+<li>We find the closest location to our current location</li>
+<li>We set current location to the closet location (ie we traveled to the next location)</li>
+<li>Repeat until we have traveled to all the locations (ie seen.len() == HashMap.len())</li>
+</ul>
+</li>
+</ul>
+<p>Of course, we did some math to track the total distances traveled, and, when needed, we updated our <code>shortest_distance</code> variable.</p>
+<h4 id="thoughts-on-solution"><a class="header" href="#thoughts-on-solution">Thoughts on Solution</a></h4>
+<p>I find it visually ugly, but I think that is because I muddled through. All the steps I wanted are here, but I did not know how to write the steps. So I would writes things in main to test out ideas and once I got something working, I would copy it into a function and delete it from <code>main</code>. This style of programming works, but I care so much about "trying out an idea" that I spent little time on my variable names and code structure and quality.</p>
+<p>I think this is my first time using a nested HashMap in Rust, so navigating that was kind of awkward. It was a lot to type and I sometimes got lost in the get a reference or get a mutable reference of the inner HashMap. At one point, I even got tired of typing, so I copied and pasted the signature whenever I needed it. I guess I could have declared the signature as a new type and that would have saved me tome typing.</p>
+<p>The CLONING!!! I kept throwing that method at the wall everytime I ran into an issue instead of taking the time to think about my data and if the clone makes sense.</p>
+<p>Though I had a clear outline of how I wanted to solve the clostest distance part, I couldn't translate it into code at first. I made a number of mistakes before I got it right.</p>
+<h2 id="the-problem-part-2-7"><a class="header" href="#the-problem-part-2-7">The Problem Part 2</a></h2>
+<p>The next year, just to show off, Santa decides to take the route with the longest distance instead.</p>
+<p>He can still start and end at any two (different) locations he wants, and he still must visit each location exactly once.</p>
+<p>For example, given the distances above, the longest route would be 982 via (for example) Dublin -&gt; London -&gt; Belfast.</p>
+<p>What is the distance of the longest route?</p>
+<h3 id="thoughts-17"><a class="header" href="#thoughts-17">Thoughts:</a></h3>
+<p>I should be able to copy and paste the solution from part 1 and change the operators from less than to greater than and get the answer... I hope that's it because I really do not want to spend too much more time on this problem.</p>
+<h3 id="solution-part-2-1"><a class="header" href="#solution-part-2-1">Solution Part 2</a></h3>
+<p>Change operators and some variable names from like min to max and shortest to longest, but that was all.</p>
+<pre><pre class="playground"><code class="language-rust">use std::collections::{HashMap, HashSet};
+use std::io;
+
+fn update_distances(
+    mut distances: HashMap&lt;String, HashMap&lt;String, usize&gt;&gt;,
+    start: String,
+    end: String,
+    distance: usize,
+) -&gt; HashMap&lt;String, HashMap&lt;String, usize&gt;&gt; {
+    match distances.contains_key(&amp;start) {
+        false =&gt; {
+            let mut temp = HashMap::new();
+            temp.insert(end.clone(), distance.clone());
+            distances.insert(start.clone(), temp);
+        }
+        true =&gt; {
+            if let Some(data) = distances.get_mut(&amp;start) {
+                data.insert(end.clone(), distance.clone());
+            }
+        }
+    }
+
+    distances
+}
+
+fn create_data_structure(
+    mut distances: HashMap&lt;String, HashMap&lt;String, usize&gt;&gt;,
+) -&gt; HashMap&lt;String, HashMap&lt;String, usize&gt;&gt; {
+    for line in io::stdin().lines() {
+        let data = line.unwrap();
+        let data: Vec&lt;String&gt; = data.split(" ").map(|x| x.to_string()).collect();
+
+        let (start, end, distance) = (data[0].clone(), data[2].clone(), data[4].clone());
+        let distance: usize = distance.parse().unwrap();
+
+        // updating the map
+        distances = update_distances(distances, start.clone(), end.clone(), distance.clone());
+        distances = update_distances(distances, end.clone(), start.clone(), distance.clone());
+        println!("{start} {end} {distance}");
+    }
+
+    distances
+}
+
+fn farthest_distance(
+    map: &amp;HashMap&lt;String, usize&gt;,
+    seen: &amp;HashSet&lt;String&gt;,
+) -&gt; Option&lt;(String, usize)&gt; {
+    let mut result = None;
+    let mut max = 0;
+    for (loc, dis) in map.iter() {
+        if !seen.contains(loc) {
+            if dis &gt; &amp;max {
+                max = dis.clone();
+                result = Some((loc.to_string(), dis.clone()));
+            }
+        }
+    }
+    result
+}
+
+fn main() {
+    let mut distances: HashMap&lt;String, HashMap&lt;String, usize&gt;&gt; = HashMap::new();
+    distances = create_data_structure(distances);
+
+    let mut longest_distance = 0;
+    for (start, map) in distances.iter() {
+        print!("Start {start} -&gt; ");
+
+        let mut current_loc = start.clone();
+        let mut current_map = map;
+        let mut total = 0;
+        let mut seen = HashSet::new();
+        while seen.len() &lt; map.len() {
+            seen.insert(current_loc.clone());
+            match farthest_distance(current_map, &amp;seen) {
+                None =&gt; {}
+                Some((loc, dis)) =&gt; {
+                    total += dis;
+                    print!("{loc} ({total}) -&gt; ");
+
+                    current_loc = loc;
+                    current_map = distances.get(&amp;current_loc).unwrap()
+                }
+            }
+        }
+        if total &gt; longest_distance {
+            longest_distance = total;
+        }
+        println!("\n");
+    }
+
+    println!("{}", longest_distance);
+}</code></pre></pre>
 
                     </main>
 
