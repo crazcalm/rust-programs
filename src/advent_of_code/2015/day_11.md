@@ -32,13 +32,13 @@ For example:
 
 Given Santa's current password (your puzzle input), what should his next password be?
 
-Your puzzle input is hxbxwxba.
+Your puzzle input is `hxbxwxba`.
 
 ### Thoughts
 
 The password being a fixed size great help. 8 characters is small enough that I can create a function for each one of these checks and not care how long it will take to process.
 
-For no reason in particular, I am thinking about fancy stuff like a validate function that tasks a list of functions and a string as input. The string will then get tested against all the functions in the list and if any of the function return false, it will return false.
+For no reason in particular, I am thinking about fancy stuff like a validate function that takes a list of functions and a string as input. The string will then get tested against all the functions in the list and if any of the function return false, it will return false.
 
 The reason I can do this is because all the validation checks have the same function signature, which is that they take in a string reference and return a boolean.
 
@@ -48,7 +48,7 @@ I could take time to think about the other parts of the problem, but I'm pretty 
 
 ### Solution
 
-This took a lot longer to write than I thought it would and, with regard to speed of the code, this is, by far, my slowest implementation yet.
+This took a lot longer to write than I thought it would and, with regard to speed of the code, this is, by far, the slowest thing I have written so far.
 
 ```rust
 {{ #include ../../../advent_of_code/2015/day_11/src/main.rs }}
@@ -56,15 +56,15 @@ This took a lot longer to write than I thought it would and, with regard to spee
 
 I did everything I said I was going to do. I created a struct called Password that has a increment method and a to_string method. Internally, it manipulates and Vec of numbbers, which makes the implementation for the increment method manageable.
 
-I have a validate function that takes a list of functions with the signature of `fn (&str) -> bool` and it also has a parameter called input which is a String. The validate function iterates over the functions in the list, it passes a reference to the `input` to those functions and makes sure they all return true.
+I have a validate function that takes a list of functions with the signature of `fn (&str) -> bool` and it also has a parameter called input which is a String. The validate function iterates over the functions in the list, it passes a reference to `input` to those functions and makes sure they all return true.
 
-I then wrote out each of the function checks one by one.
+I then wrote out each of the requirements as functions.
 
-Archetectually, I really like this code because everything is broken down into small components. Maintaining this code would a breeze. That said, the reason the code is slow to solve the problem is because I separated everything.
+Architectually, I really like this code because everything is broken down into small components. Maintaining this code would a breeze. That said, the reason the code is slow to solve the problem is because I separated everything out.
 
 > The next password after ghijklmn is ghjaabcc, because you eventually skip all the passwords that start with ghi..., since i is not allowed.
 
-My code increments that password one unit at a time, which means that I have to go through every `ghi....` combination before getting to the correct answer. For this test input, the code to so long to complete that I was positive that I had an infinite loop somewhere. It wasn't until I killed the program and added print statements that realized that the program is fine, its just slow. That said, it was really cool to see the password increment up really fast.
+My code increments that password one unit at a time, which means that I have to go through every `ghi....` combination before getting to the correct answer. For this test input, the code took so long to complete that I was positive that I had an infinite loop somewhere. It wasn't until I killed the program and added print statements that realized that the program is fine, its just slow. That said, it was really cool to see the password increment up super fast.
 
 ## The Problem Part 2
 
