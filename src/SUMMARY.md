@@ -13,7 +13,7 @@
 	  - [Day 8](./advent_of_code/2015/day_8.md)
 	  - [Day 9](./advent_of_code/2015/day_9.md)
 	  - [Day 10](./advent_of_code/2015/day_10.md)
-	  - [Day 11]()
+	  - [Day 11](./advent_of_code/2015/day_11.md)
 	  - [Day 12]()
 	  - [Day 13]()
 	  - [Day 14]()
