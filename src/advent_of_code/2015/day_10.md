@@ -34,3 +34,14 @@ Take 111221 for example:
 - 1 has a count of 1, so it becomes 11
 
 Putting that all together gives us 312211, which is the answer.
+
+### Solution
+For context, problem part 1 and part 2 were the same. The only difference between them was how many you run the process.
+
+I wrote the solution out a couple of days ago, but I remember it pretty quick. I iterated over the string and looked at the previous character and the current character. If those two characters are equal, I up the count by 1. If not, I append the count and previous character to my result string, set the current count equal to 1 and start the process over again. Once the iteration is finished, you have to remember to add the last count and character to the result string.
+
+The above code got put into a function so that I can take its output and use it as input. This also made it easy to call it 40 or 50 times too. 
+
+```rust
+{{ #include ../../../advent_of_code/2015/day_10/src/main.rs }}
+```
