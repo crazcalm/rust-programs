@@ -2179,6 +2179,107 @@ fn main() {
 <p>My code increments that password one unit at a time, which means that I have to go through every <code>ghi....</code> combination before getting to the correct answer. For this test input, the code took so long to complete that I was positive that I had an infinite loop somewhere. It wasn't until I killed the program and added print statements that realized that the program is fine, its just slow. That said, it was really cool to see the password increment up super fast.</p>
 <h2 id="the-problem-part-2-8"><a class="header" href="#the-problem-part-2-8">The Problem Part 2</a></h2>
 <p>After I found the password in part 1, they wanted me to find the next password. So the code stays the same, but I did manually increment part 1's password by one to that it would be invalid. Otherwise the code returns the input because the input is a valid password.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="day-12-jsabacusframeworkio"><a class="header" href="#day-12-jsabacusframeworkio">Day 12: JSAbacusFramework.io</a></h1>
+<p><a href="https://adventofcode.com/2015/day/12">link to problem</a></p>
+<h2 id="the-problem-11"><a class="header" href="#the-problem-11">The Problem</a></h2>
+<p>Santa's Accounting-Elves need help balancing the books after a recent order. Unfortunately, their accounting software uses a peculiar storage format. That's where you come in.</p>
+<p>They have a JSON document which contains a variety of things: arrays ([1,2,3]), objects ({"a":1, "b":2}), numbers, and strings. Your first job is to simply find all of the numbers throughout the document and add them together.</p>
+<p>For example:</p>
+<blockquote>
+<p>[1,2,3] and {"a":2,"b":4} both have a sum of 6.</p>
+</blockquote>
+<blockquote>
+<p>[[[3]]] and {"a":{"b":4},"c":-1} both have a sum of 3.</p>
+</blockquote>
+<blockquote>
+<p>{"a":[-1,1]} and [-1,{"a":1}] both have a sum of 0.</p>
+</blockquote>
+<blockquote>
+<p>[] and {} both have a sum of 0.</p>
+</blockquote>
+<p>You will not encounter any strings containing numbers.</p>
+<p>What is the sum of all numbers in the document?</p>
+<h3 id="thoughts-20"><a class="header" href="#thoughts-20">Thoughts</a></h3>
+<p>I don't want to use a JSON library for this. This seems like a string parser will do. I think I an use a state machine to capture the number.</p>
+<p>States:</p>
+<ul>
+<li>InNumber</li>
+<li>OutNumber</li>
+</ul>
+<p>The first character is a <code>-</code> or a digit and the rest of the characters are digits. Since this is JSON, the starting state is OutNumber.</p>
+<p>Everytime I capture a number, I will add it to the sum.</p>
+<p>In terms of representing the number, I will build it as a string and parse it once I hit the OutNumber state.</p>
+<p>Given that there are only two states, I can probably use a boolean for them.</p>
+<h3 id="solution-5"><a class="header" href="#solution-5">Solution</a></h3>
+<p>The code is simplier than I thought. Technically speaking, it is a state machine, but since there are only two states, I do not need a variable to keep track of it.</p>
+<pre><pre class="playground"><code class="language-rust">use std::io;
+
+fn main() {
+    for line in io::stdin().lines() {
+        let mut number = String::new();
+        let mut sum: i32 = 0;
+        for character in line.unwrap().chars() {
+            if character.eq(&amp;'-') || character.is_digit(10) {
+                number.push(character);
+            } else {
+                match number.is_empty() {
+                    true =&gt; {}
+                    false =&gt; {
+                        sum += number.parse::&lt;i32&gt;().unwrap().clone();
+                        number = String::new();
+                    }
+                }
+            }
+        }
+
+        println!("sum: {sum}");
+    }
+}</code></pre></pre>
+<h2 id="the-problem-part-2-9"><a class="header" href="#the-problem-part-2-9">The Problem Part 2</a></h2>
+<p>Uh oh - the Accounting-Elves have realized that they double-counted everything red.</p>
+<p>Ignore any object (and all of its children) which has any property with the value "red". Do this only for objects ({...}), not arrays ([...]).</p>
+<blockquote>
+<p>[1,2,3] still has a sum of 6.</p>
+</blockquote>
+<blockquote>
+<p>[1,{"c":"red","b":2},3] now has a sum of 4, because the middle object is ignored.</p>
+</blockquote>
+<blockquote>
+<p>{"d":"red","e":[1,2,3,4],"f":5} now has a sum of 0, because the entire structure is ignored.</p>
+</blockquote>
+<blockquote>
+<p>[1,"red",5] has a sum of 6, because "red" in an array has no effect.</p>
+</blockquote>
+<h3 id="thoughts-21"><a class="header" href="#thoughts-21">Thoughts</a></h3>
+<p>They want me to keep track of the curly brackets. That said, this is pretty tricky because "red" could be the last item in the object, and, if it is, I have to ignore all the numbers collected in that object.</p>
+<p>I also have to take nested children into consideration as well. So...Is this like a Stack where each entry represents a level of depth? Maybe not a stack. I think I can use a Vec and have each index be a sum for that depth. If I see "red", everything at the idex and past it get set to zero.</p>
+<p>At the end of the program, I sum the Vec.</p>
+<p>This program will be easier to write if I use a Vec of a fixed size. The input.txt file doesn't look like it has too many nested objects. I will start with a size of 10 and bump it if I need to.</p>
+<h3 id="second-attempt"><a class="header" href="#second-attempt">Second attempt</a></h3>
+<p>I underestimated the problem... So here I am days later attempting to solve it again.</p>
+<p>This is awkward. Enough time has passed that I forgot what I was doing and which mistakes I made. Oh well.</p>
+<p>I think I wanted to solve this recursively? Like, sum all object from the inner nested ones outward. For example,</p>
+<p>We know this <code>{"d":"red","e":[1,2,3,4],"f":5}</code> is 0 because there is a "red" in the object.
+We know this <code>{"d":"1","e":[1,2,"red",4],"f":5}</code> is 13 because the red is ignored (array rule).</p>
+<p>If we can sum these individually and sum them together as we go back up the stack, we should get the answer.</p>
+<p>Now how to I recursively break the structure down...</p>
+<p>Something like this might work. Let me try it.</p>
+<pre><code>def test(vec, start):
+   sum = 0
+   string = "{"
+   for x in range(index, len(vec)):
+       if vec[x] == "{":
+	     sum += test(vec, x + 1)
+	   elif vec[x] == "}":
+	     # sum rules
+		 # do this is a different function
+		 string += "}"
+		 sum += func()
+	   else:
+	     string += vec[x] 
+</code></pre>
+<p>I admit defeat. I had a lot of fun, but nothing I did work.</p>
+<p>I am ready to move on with life.</p>
 
                     </main>
 
