@@ -143,3 +143,18 @@ __Figure 3.4__: Insertion into and deletion from a linked list
 On the other hand, there are other operations for which a linked list are not well-suited. The most obvious of these is "find the _k_th item" (find an item given its index): in an array this is done simply by accessing `a[k]`, but in a linked list we have to travel through _k_ links.
 
 Another operation that is unnatural on linked lists is "find the item _before_ a given item." If all we have is the link to T in our sample list, then the only way we can find the link to S is to start as _head_ and travel through the linked list to find the node that points to T. As a matter of fact, this operations is necessary if we want to be able to delete a given node froma linked list: how else do we find the node whose link much be changed? In many applications, we can get around this problem by redesigning the fundemental deletion operation to be "delete the next node." A similar problem can be avoided for insertion by making the fundemental insertion operation "insert a given item _after_ a given node" in the list.
+
+### C Implementation
+C provides primitives operations that allow linked lists to be implemented directly. The following code fragment is a sample implementation of the basic functions that we have discussed so far.
+
+```c
+{{#include ../../Algorithms_in_C/ch_3/linked_lists/linked_list.c}}
+```
+
+```admonish note
+The original code was a snippet that did not have the import line or a main function. I added those so that the code would compile. 
+```
+
+```admonish note
+The use of the dummy node _head_ and _z_ do make the implementation easier. For example, the `deletenext` function never has to worry about `t->next->next` not existing, and the `insertafter` method never has to `t->next` because the first node will always be _head_ and the _head_ node will always have a next.
+```
