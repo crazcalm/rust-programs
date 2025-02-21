@@ -24,9 +24,9 @@ jobs:
 
       - run: |
           cargo install mdbook-admonish
-	  cargo install mdbook-mermaid
-	  mdbook-admonish install .
-	  mdbook-mermaid install .
+          cargo install mdbook-mermaid
+          mdbook-admonish install .
+          mdbook-mermaid install .
           mdbook build
 
       - name: Deploy
