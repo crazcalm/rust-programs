@@ -329,6 +329,58 @@ fn main() {
 <p><strong>Figure 3.4</strong>: Insertion into and deletion from a linked list</p>
 <p>On the other hand, there are other operations for which a linked list are not well-suited. The most obvious of these is "find the _k_th item" (find an item given its index): in an array this is done simply by accessing <code>a[k]</code>, but in a linked list we have to travel through <em>k</em> links.</p>
 <p>Another operation that is unnatural on linked lists is "find the item <em>before</em> a given item." If all we have is the link to T in our sample list, then the only way we can find the link to S is to start as <em>head</em> and travel through the linked list to find the node that points to T. As a matter of fact, this operations is necessary if we want to be able to delete a given node froma linked list: how else do we find the node whose link much be changed? In many applications, we can get around this problem by redesigning the fundemental deletion operation to be "delete the next node." A similar problem can be avoided for insertion by making the fundemental insertion operation "insert a given item <em>after</em> a given node" in the list.</p>
+<h3 id="c-implementation-1"><a class="header" href="#c-implementation-1">C Implementation</a></h3>
+<p>C provides primitives operations that allow linked lists to be implemented directly. The following code fragment is a sample implementation of the basic functions that we have discussed so far.</p>
+<pre><code class="language-c">#include &lt;stdlib.h&gt;
+
+struct node
+{ int key; struct node *next;};
+
+struct node *head, *z, *t;
+
+listinitialize()
+{
+  head = (struct node *) malloc(sizeof *head);
+  z = (struct node *) malloc(sizeof *z);
+  head-&gt;next = z; z-&gt;next = z; 
+}
+
+deletenext(struct node *t)
+{t-&gt;next = t-&gt;next-&gt;next;}
+
+struct node *insertafter(int v, struct node *t)
+{
+  struct node *x;
+  x = (struct node *) malloc(sizeof *x);
+  x-&gt;key = v; x-&gt;next = t-&gt;next;
+  t-&gt;next=x;
+  return x;
+}
+
+main(){}
+</code></pre>
+<div id="admonition-note-3" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-3-title">
+<div class="admonition-title">
+<div id="admonition-note-3-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-note-3"></a>
+</div>
+<div>
+<p>The original code was a snippet that did not have the import line or a main function. I added those so that the code would compile.</p>
+</div>
+</div>
+<div id="admonition-note-4" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-4-title">
+<div class="admonition-title">
+<div id="admonition-note-4-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-note-4"></a>
+</div>
+<div>
+<p>The use of the dummy node <em>head</em> and <em>z</em> do make the implementation easier. For example, the <code>deletenext</code> function never has to worry about <code>t-&gt;next-&gt;next</code> not existing, and the <code>insertafter</code> method never has to <code>t-&gt;next</code> because the first node will always be <em>head</em> and the <em>head</em> node will always have a next.</p>
+</div>
+</div>
 
                     </main>
 
