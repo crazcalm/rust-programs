@@ -1,6 +1,9 @@
 # Summary
 
 - [Chapter 1](./chapter_1.md)
+- [Algorithms in C]()
+  - [Chapter 2](./algortihms_in_c/chapter_2.md)
+  - [Chapter 3](./algortihms_in_c/chapter_3.md)
 - [Advent of Code]()
   - [2015]()
       - [Day 1](./advent_of_code/2015/day_1.md)
