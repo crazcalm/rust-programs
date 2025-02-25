@@ -158,3 +158,36 @@ The original code was a snippet that did not have the import line or a main func
 ```admonish note
 The use of the dummy node _head_ and _z_ do make the implementation easier. For example, the `deletenext` function never has to worry about `t->next->next` not existing, and the `insertafter` method never has to `t->next` because the first node will always be _head_ and the _head_ node will always have a next.
 ```
+
+### Rust Implementation
+
+I was unable to write this in Rust. It is not possible with Safe Rust because all of these nodes are owned by the linked_list and the main function that is passing them into these methods. I believe this is possible with Unsafe Rust, but I do not know how to write Unsafe Rust and I cannot justify that rabbit hole for this book.
+
+The compromise is that I wrote it in Python.
+
+### Python implementation
+```python
+{{#include ../../Algorithms_in_C/ch_3/linked_lists/linked_list.py}}
+```
+
+__Output:__
+```
+❯ python linked_list.py 
+0: Node(key=5)
+1: Node(key=10)
+2: Node(key=15)
+
+Delete Node(key=10)
+
+0: Node(key=5)
+1: Node(key=15)
+```
+
+#### Thoughts
+I'm kind of angry with how easy it was to translate this into Python. I love Rust, but it always hurts when you try to do "simple" things in programming that are actually extremely difficult in Rust and you end up struggling for hours.
+
+That aside, the Python translation was straightforward. I added `__repr__` methods to both the Node and LinkedList so that I could see the output. The tricky part about that is that the Node method cannot print `node.next` because `z` points it itself, so it hits your recursive upper limit and crashes.
+
+For the LinkedList, having the dummy `head` and `z` worked wonders in making the `insert_after` and the `delete_next` methods simple. It also does not limit the your options for new Nodes because the terminal node `z` is a pointer check to the class instance and not a equality check. So, in theory, I can add other nodes with the same properties of `z` to my linked_list and it should work fine.
+
+I also liked how easy it was to skip the dummy nodes when iterating over the list. If you don't look at the implementation, (based off `main` and the output) you would never know that dummy nodes are being used. 
