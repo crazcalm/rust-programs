@@ -381,6 +381,74 @@ main(){}
 <p>The use of the dummy node <em>head</em> and <em>z</em> do make the implementation easier. For example, the <code>deletenext</code> function never has to worry about <code>t-&gt;next-&gt;next</code> not existing, and the <code>insertafter</code> method never has to <code>t-&gt;next</code> because the first node will always be <em>head</em> and the <em>head</em> node will always have a next.</p>
 </div>
 </div>
+<h3 id="rust-implementation-1"><a class="header" href="#rust-implementation-1">Rust Implementation</a></h3>
+<p>I was unable to write this in Rust. It is not possible with Safe Rust because all of these nodes are owned by the linked_list and the main function that is passing them into these methods. I believe this is possible with Unsafe Rust, but I do not know how to write Unsafe Rust and I cannot justify that rabbit hole for this book.</p>
+<p>The compromise is that I wrote it in Python.</p>
+<h3 id="python-implementation"><a class="header" href="#python-implementation">Python implementation</a></h3>
+<pre><code class="language-python">class Node:
+    def __init__(self, key, node=None):
+        self.key = key
+        self.next = node
+
+    def __repr__(self):
+        return f"Node(key={self.key})"
+
+class LinkedList:
+    def __init__(self):
+        self.head = Node(None)
+        self.z = Node(None)
+        self.head.next = self.z
+        self.z.next = self.z
+
+    def delete_next(self, node):
+        node.next = node.next.next
+
+    def insert_after(self, value, node):
+        new_node = Node(value, node.next)
+        node.next = new_node
+        return new_node
+
+    def __repr__(self):
+        result = ""
+        current_node = self.head.next
+        index = 0
+        while current_node != self.z:
+            result += f"{index}: {current_node}\n"
+            current_node = current_node.next
+            index += 1
+        return result
+    
+def main():
+    linked_list = LinkedList()
+    node_one = linked_list.insert_after(5, linked_list.head)
+    node_two = linked_list.insert_after(10, node_one)
+    node_three = linked_list.insert_after(15, node_two)
+
+    print(f"{linked_list}")
+    print(f"Delete {node_two}\n")
+
+    linked_list.delete_next(node_one)
+    print(f"{linked_list}")
+    
+if __name__ == "__main__":
+    main()
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>❯ python linked_list.py 
+0: Node(key=5)
+1: Node(key=10)
+2: Node(key=15)
+
+Delete Node(key=10)
+
+0: Node(key=5)
+1: Node(key=15)
+</code></pre>
+<h4 id="thoughts"><a class="header" href="#thoughts">Thoughts</a></h4>
+<p>I'm kind of angry with how easy it was to translate this into Python. I love Rust, but it always hurts when you try to do "simple" things in programming that are actually extremely difficult in Rust and you end up struggling for hours.</p>
+<p>That aside, the Python translation was straightforward. I added <code>__repr__</code> methods to both the Node and LinkedList so that I could see the output. The tricky part about that is that the Node method cannot print <code>node.next</code> because <code>z</code> points it itself, so it hits your recursive upper limit and crashes.</p>
+<p>For the LinkedList, having the dummy <code>head</code> and <code>z</code> worked wonders in making the <code>insert_after</code> and the <code>delete_next</code> methods simple. It also does not limit the your options for new Nodes because the terminal node <code>z</code> is a pointer check to the class instance and not a equality check. So, in theory, I can add other nodes with the same properties of <code>z</code> to my linked_list and it should work fine.</p>
+<p>I also liked how easy it was to skip the dummy nodes when iterating over the list. If you don't look at the implementation, (based off <code>main</code> and the output) you would never know that dummy nodes are being used.</p>
 
                     </main>
 

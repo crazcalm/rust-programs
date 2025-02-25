@@ -476,6 +476,74 @@ main(){}
 <p>The use of the dummy node <em>head</em> and <em>z</em> do make the implementation easier. For example, the <code>deletenext</code> function never has to worry about <code>t-&gt;next-&gt;next</code> not existing, and the <code>insertafter</code> method never has to <code>t-&gt;next</code> because the first node will always be <em>head</em> and the <em>head</em> node will always have a next.</p>
 </div>
 </div>
+<h3 id="rust-implementation-1"><a class="header" href="#rust-implementation-1">Rust Implementation</a></h3>
+<p>I was unable to write this in Rust. It is not possible with Safe Rust because all of these nodes are owned by the linked_list and the main function that is passing them into these methods. I believe this is possible with Unsafe Rust, but I do not know how to write Unsafe Rust and I cannot justify that rabbit hole for this book.</p>
+<p>The compromise is that I wrote it in Python.</p>
+<h3 id="python-implementation"><a class="header" href="#python-implementation">Python implementation</a></h3>
+<pre><code class="language-python">class Node:
+    def __init__(self, key, node=None):
+        self.key = key
+        self.next = node
+
+    def __repr__(self):
+        return f"Node(key={self.key})"
+
+class LinkedList:
+    def __init__(self):
+        self.head = Node(None)
+        self.z = Node(None)
+        self.head.next = self.z
+        self.z.next = self.z
+
+    def delete_next(self, node):
+        node.next = node.next.next
+
+    def insert_after(self, value, node):
+        new_node = Node(value, node.next)
+        node.next = new_node
+        return new_node
+
+    def __repr__(self):
+        result = ""
+        current_node = self.head.next
+        index = 0
+        while current_node != self.z:
+            result += f"{index}: {current_node}\n"
+            current_node = current_node.next
+            index += 1
+        return result
+    
+def main():
+    linked_list = LinkedList()
+    node_one = linked_list.insert_after(5, linked_list.head)
+    node_two = linked_list.insert_after(10, node_one)
+    node_three = linked_list.insert_after(15, node_two)
+
+    print(f"{linked_list}")
+    print(f"Delete {node_two}\n")
+
+    linked_list.delete_next(node_one)
+    print(f"{linked_list}")
+    
+if __name__ == "__main__":
+    main()
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>❯ python linked_list.py 
+0: Node(key=5)
+1: Node(key=10)
+2: Node(key=15)
+
+Delete Node(key=10)
+
+0: Node(key=5)
+1: Node(key=15)
+</code></pre>
+<h4 id="thoughts-1"><a class="header" href="#thoughts-1">Thoughts</a></h4>
+<p>I'm kind of angry with how easy it was to translate this into Python. I love Rust, but it always hurts when you try to do "simple" things in programming that are actually extremely difficult in Rust and you end up struggling for hours.</p>
+<p>That aside, the Python translation was straightforward. I added <code>__repr__</code> methods to both the Node and LinkedList so that I could see the output. The tricky part about that is that the Node method cannot print <code>node.next</code> because <code>z</code> points it itself, so it hits your recursive upper limit and crashes.</p>
+<p>For the LinkedList, having the dummy <code>head</code> and <code>z</code> worked wonders in making the <code>insert_after</code> and the <code>delete_next</code> methods simple. It also does not limit the your options for new Nodes because the terminal node <code>z</code> is a pointer check to the class instance and not a equality check. So, in theory, I can add other nodes with the same properties of <code>z</code> to my linked_list and it should work fine.</p>
+<p>I also liked how easy it was to skip the dummy nodes when iterating over the list. If you don't look at the implementation, (based off <code>main</code> and the output) you would never know that dummy nodes are being used.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="day-1-not-quite-lisp"><a class="header" href="#day-1-not-quite-lisp">Day 1: Not Quite Lisp</a></h1>
 <p><a href="https://adventofcode.com/2015/day/1">Link to problem</a></p>
 <h2 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h2>
@@ -490,7 +558,7 @@ main(){}
 ))) and )())()) both result in floor -3.
 </code></pre>
 <p>To what floor do the instructions take Santa?</p>
-<h3 id="thoughts-1"><a class="header" href="#thoughts-1">Thoughts</a></h3>
+<h3 id="thoughts-2"><a class="header" href="#thoughts-2">Thoughts</a></h3>
 <p>This is a warm up problem, so there is not much to think about, but I did appreciate the opportunity to think about the process I want to use to solve these problems. I just finished reading The C Programming Language book and the small commandline programs they built throughout that book was eye opening. So, for my solutions, I will pass the input to my programs via stdin.</p>
 <pre><pre class="playground"><code class="language-rust">use std::io;
 
@@ -515,7 +583,7 @@ fn main() {
 ()()) causes him to enter the basement at character position 5.
 </code></pre>
 <p>What is the position of the character that causes Santa to first enter the basement?</p>
-<h3 id="thoughts-2"><a class="header" href="#thoughts-2">Thoughts</a></h3>
+<h3 id="thoughts-3"><a class="header" href="#thoughts-3">Thoughts</a></h3>
 <p>This took me by surprise! I had already started working on day 2. I actually saw that day 2 has a part 2 before I realized that day one had a part 2.</p>
 <p>At first glance, this problem looks like it is just about counting the characters I see and reporting when the floor hits -1. In the spirit of unix and in the aim of learning to let go of code, I will create a new project for this.</p>
 <pre><pre class="playground"><code class="language-rust">use std::io;
@@ -556,7 +624,7 @@ fn main() {
 <p>A present with dimensions 1x1x10 requires 2*1 + 2*10 + 2*10 = 42 square feet of wrapping paper plus 1 square foot of slack, for a total of 43 square feet.</p>
 </blockquote>
 <p>All numbers in the elves' list are in feet. How many total square feet of wrapping paper should they order?</p>
-<h3 id="thoughts-3"><a class="header" href="#thoughts-3">Thoughts</a></h3>
+<h3 id="thoughts-4"><a class="header" href="#thoughts-4">Thoughts</a></h3>
 <p>For this problem, I wanted to play around with variable initialization. I couldn't get the <code>collect</code> call to return the just the three values in like a tuple that I could distribute to individual variables, so I settled on putting it into a Vec and separating them later.</p>
 <p>The <code>side</code> variables are meh. I could have done something more fancy with them, but I was tired and it didn't seem worth it. The <code>extra</code> variable initialization though! I like that one. I rarely use random code block at all in my code, but using it like this to initialize a semi complicated variable lets me see the power of these blocks!</p>
 <pre><pre class="playground"><code class="language-rust">use std::io;
@@ -600,7 +668,7 @@ fn main() {
 <p>A present with dimensions 1x1x10 requires 1+1+1+1 = 4 feet of ribbon to wrap the present plus 1<em>1</em>10 = 10 feet of ribbon for the bow, for a total of 14 feet.</p>
 </blockquote>
 <p>How many total feet of ribbon should they order?</p>
-<h3 id="thoughts-4"><a class="header" href="#thoughts-4">Thoughts</a></h3>
+<h3 id="thoughts-5"><a class="header" href="#thoughts-5">Thoughts</a></h3>
 <p>I made this problem extremely annoying by trying to be fancy. If you put all the sides into an Vec and sort it, then the first two entries will be the smaller two sides. That is straight forward. Another thing that should have been straight forward is getting the cubed size. All you have to do is multiple <code>dimension[0] * dimension[1] * dimension[2]</code>, but no. I wanted to be fancy and use <code>reduce</code>.</p>
 <p>Fun fact. If you are iterating over a Vec, then you have access to references of the elements. If you call reduce on a Vec of references, then Rust expects you to deal with references in your reduce. I don't want to deal with references. As such, it took me 10 minutes to figure out that I had to use <code>map</code> to make non-reference copies of the elements of the Vec before calling reduce.</p>
 <p>All in all, being fancy was stupid. Next time just mupltiple the items together...</p>
@@ -645,7 +713,7 @@ fn main() {
 <blockquote>
 <p>^v^v^v^v^v delivers a bunch of presents to some very lucky children at only 2 houses.</p>
 </blockquote>
-<h3 id="thoughts-5"><a class="header" href="#thoughts-5">Thoughts</a></h3>
+<h3 id="thoughts-6"><a class="header" href="#thoughts-6">Thoughts</a></h3>
 <p>If you treat the directions as 2d grid coordinates and then put the seen coordinates into a set, you are pretty much done. The only part I was confused about was whether or not I would make the borrow checker angry by passing my varaibles (that I still plan on using) to the HashSet. Upon reviewing the Rust Book, I performed a "<a href="https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#stack-only-data-copy">Stack-Only Data Copy</a>", which means that, for integers that exist entirely on the stack, a copy is made when you assign them to another variable leaving both variable valid.</p>
 <pre><pre class="playground"><code class="language-rust">use std::collections::HashSet;
 use std::io;
@@ -689,7 +757,7 @@ fn main() {
 <blockquote>
 <p>^v^v^v^v^v now delivers presents to 11 houses, with Santa going one direction and Robo-Santa going the other.</p>
 </blockquote>
-<h3 id="thoughts-6"><a class="header" href="#thoughts-6">Thoughts</a></h3>
+<h3 id="thoughts-7"><a class="header" href="#thoughts-7">Thoughts</a></h3>
 <p>The problem seems more or less the same, with the difference being that even instructions go to Santa and the odd instructions go to the Robot.</p>
 <p>For a moment there, I was going to try to think of clever ways to split up the program, but the simple solution of maintaining two set of grid coordinates seems fine.</p>
 <pre><pre class="playground"><code class="language-rust">use std::collections::HashSet;
@@ -760,7 +828,7 @@ fn main() {
 <p>If your secret key is pqrstuv, the lowest number it combines with to make an MD5 hash starting with five zeroes is 1048970; that is, the MD5 hash of pqrstuv1048970 looks like 000006136ef....</p>
 </blockquote>
 <p>Your puzzle input is <code>iwrupvqb</code>.</p>
-<h3 id="thoughts-7"><a class="header" href="#thoughts-7">Thoughts</a></h3>
+<h3 id="thoughts-8"><a class="header" href="#thoughts-8">Thoughts</a></h3>
 <p>I took a brief look at the <a href="https://en.wikipedia.org/wiki/MD5">MD5 Wiki page</a> and no obvious ways to force my wanted output jumped out at me, so I think I am going to go with the brute force approach. In the largest example, it looked like it was a little over a million MD5 computations (assuming that you start from 1).</p>
 <pre><pre class="playground"><code class="language-rust">use std::io;
 
@@ -798,7 +866,7 @@ fn main() {
 <p>All in all, the change to the code was small. Now, I am using the LowerHex formatter instead of the Debug formatter. Though this makes my code a little cleaner, both traits were using the same fmt code under the hood, so its all kind of pointless...</p>
 <h2 id="the-problem-part-2-2"><a class="header" href="#the-problem-part-2-2">The Problem Part 2</a></h2>
 <p>Now find one that starts with six zeroes.</p>
-<h3 id="thoughts-8"><a class="header" href="#thoughts-8">Thoughts</a></h3>
+<h3 id="thoughts-9"><a class="header" href="#thoughts-9">Thoughts</a></h3>
 <p>I was going to go to bed, but I this seems like the exact same problem as the first. so I am going to take a crack at it.</p>
 <p>...</p>
 <p>They got me. The wording is different between part 1 and part 2. In part 1 it was "at least five zeros" and now it is "starts with six zeros", which means that if it starts with seven zeros, its is not correct! Given that I now have to care about the value that comes after the six zeros, I moved to using regex. The regex that I am currently using is <code>^0{6}[a-zA-Z1-9]</code>, but I am pretty sure this is overkill because hexidecimal is a-f and 0-9. Plus, I am explicitly setting it to LowerHex, which means that I do not have to care about the A-F.</p>
@@ -862,7 +930,7 @@ fn main() {
 <p>dvszwmarrgswjxmb is naughty because it contains only one vowel.</p>
 </blockquote>
 <p>How many strings are nice?</p>
-<h3 id="thoughts-9"><a class="header" href="#thoughts-9">Thoughts</a></h3>
+<h3 id="thoughts-10"><a class="header" href="#thoughts-10">Thoughts</a></h3>
 <p>This sounds like a one pass scan of the word with various check. For example, the first check is the vowels, so you add a set of vowels and check the current character against it and count the positive hits.</p>
 <p>The second condition is two character condition. If you are iterating over the input one character at a time, it makes sense to use index 0 to set the first <code>prev_char</code> and then use the pair of the previous character and the current character to check this condition (Must remember to update <code>prev_char</code>).</p>
 <p>The third condition has a similar setup to the second condition, but it is a "not containt", which means means that we can use this for early termination (ie, continue to the next input, but we don't have to. This could just be a flag as well).</p>
@@ -935,7 +1003,7 @@ fn main() {
 <p>ieodomkazucvgmuy is naughty because it has a repeating letter with one between (odo), but no pair that appears twice.</p>
 </blockquote>
 <p>How many strings are nice under these new rules?</p>
-<h3 id="thoughts-10"><a class="header" href="#thoughts-10">Thoughts</a></h3>
+<h3 id="thoughts-11"><a class="header" href="#thoughts-11">Thoughts</a></h3>
 <p>I agree that the first set of ruls was ridiculous, but I am not sure I am a fan of the new rules...</p>
 <p>The first rules is tricky beause they cannot overlap. For example, if I kept a hashmap of each pair of a string, then <code>aaa</code> would count as 2 pairs. And <code>aaaa</code> should count as 2 pairs, but how do you know that they are not overlapping? You cannot split them by even and odd indices because the first pair may be one an even index while the second pair is on an odd index.</p>
 <p>I am going to have to continue thinking about this.</p>
@@ -1049,7 +1117,7 @@ fn main() {
 <p>turn off 499,499 through 500,500 would turn off (or leave off) the middle four lights.</p>
 </blockquote>
 <p>After following the instructions, how many lights are lit?</p>
-<h3 id="thoughts-11"><a class="header" href="#thoughts-11">Thoughts</a></h3>
+<h3 id="thoughts-12"><a class="header" href="#thoughts-12">Thoughts</a></h3>
 <p>This seems like a mini parser... We have strings like <code>turn on 0,0 through 999,999</code>, which are <code>&lt;command&gt; &lt;start_coordinates&gt; through &lt;end_coordinates&gt;</code>.</p>
 <p>I don't think I want to write a parser though, so lets split the words up by white space.</p>
 <p>Command:</p>
@@ -1232,7 +1300,7 @@ fn main() {
 <blockquote>
 <p>toggle 0,0 through 999,999 would increase the total brightness by 2000000.</p>
 </blockquote>
-<h3 id="thoughts-12"><a class="header" href="#thoughts-12">Thoughts</a></h3>
+<h3 id="thoughts-13"><a class="header" href="#thoughts-13">Thoughts</a></h3>
 <p>I actually think this is easier than part one. I don't need an enum anymore. I can have a regular struct that has an internal counter that goes up and down with a min value of zero. And the structure of the program is identical to the first one.</p>
 <p>I am going to try to write this up quickly and move on to my next task for the night.</p>
 <pre><pre class="playground"><code class="language-rust">use std::io;
@@ -1391,7 +1459,7 @@ x: 123
 y: 456
 </code></pre>
 <p>In little Bobby's kit's instructions booklet (provided as your puzzle input), what signal is ultimately provided to wire a?</p>
-<h3 id="thoughts-13"><a class="header" href="#thoughts-13">Thoughts</a></h3>
+<h3 id="thoughts-14"><a class="header" href="#thoughts-14">Thoughts</a></h3>
 <p>Though I have a general idea of what all of this means, it is best to refresh myself on the terms and operations before breaking down the problem.</p>
 <p>So bitwise operations happen on a <a href="https://en.wikipedia.org/wiki/Bit_array">bit array</a>, which you can think of as your binary representation of a number using 1's and 0's. We were told that our wire can carry up to a 16 bit signal. A bit is single place holder for a 0 or a 1. A 16 bit signal is 16 bits, which implies that we have 16 place holders for a 0 or 1.</p>
 <p>For example:</p>
@@ -1687,7 +1755,7 @@ fn main() {
 <p>All in all, I am really glad that I took time to think through the parts of the problem I did understand correctly. I think that if I were confused by any of the bitwise operations or the initial line parsing, I would have made so many mistakes that I would have given up out of frustration.</p>
 <h2 id="the-problem-part-2-5"><a class="header" href="#the-problem-part-2-5">The Problem Part 2</a></h2>
 <p>Now, take the signal you got on wire a, override wire b to that signal, and reset the other wires (including wire a). What new signal is ultimately provided to wire a?</p>
-<h3 id="thoughts-14"><a class="header" href="#thoughts-14">Thoughts</a></h3>
+<h3 id="thoughts-15"><a class="header" href="#thoughts-15">Thoughts</a></h3>
 <p>ITS THE SAME PROBLEM WITH ONE VARIABLE CHANGED!!!</p>
 <p>I updated the value for <code>b</code> in the input and ran the code again to get the answer. Off the top of my head, I am not exactly sure how this problem is any different from part 1.</p>
 <p>Meh. At least I solved it.</p>
@@ -1713,7 +1781,7 @@ fn main() {
 <p>Santa's list is a file that contains many double-quoted string literals, one on each line. The only escape sequences used are \ (which represents a single backslash), " (which represents a lone double-quote character), and \x plus two hexadecimal characters (which represents a single character with that ASCII code).</p>
 <p>Disregarding the whitespace in the file, what is the number of characters of code for string literals minus the number of characters in memory for the values of the strings in total for the entire file?</p>
 <p>For example, given the four strings above, the total number of characters of string code (2 + 5 + 10 + 6 = 23) minus the total number of characters in memory for string values (0 + 3 + 7 + 1 = 11) is 23 - 11 = 12.</p>
-<h3 id="thoughts-15"><a class="header" href="#thoughts-15">Thoughts</a></h3>
+<h3 id="thoughts-16"><a class="header" href="#thoughts-16">Thoughts</a></h3>
 <p>I am not sure of quick way of solving this that is not brute force pattern matching.</p>
 <p>The cases seem to be:</p>
 <ul>
@@ -1852,7 +1920,7 @@ fn main() {
 <p>"\x27" encodes to ""\x27"", an increase from 6 characters to 11.</p>
 </blockquote>
 <p>Your task is to find the total number of characters to represent the newly encoded strings minus the number of characters of code in each original string literal. For example, for the strings above, the total encoded length (6 + 9 + 16 + 11 = 42) minus the characters in the original code representation (23, just like in the first part of this puzzle) is 42 - 23 = 19.</p>
-<h3 id="thoughts-16"><a class="header" href="#thoughts-16">Thoughts</a></h3>
+<h3 id="thoughts-17"><a class="header" href="#thoughts-17">Thoughts</a></h3>
 <p>It is 2 am, I'm tired, and I should go to bed, but this looks a lot simplier than part 1.</p>
 <blockquote>
 <p>Each line gets a plus 2 because we have new quotes.</p>
@@ -1924,7 +1992,7 @@ Belfast -&gt; London -&gt; Dublin = 982
 </code></pre>
 <p>The shortest of these is <code>London -&gt; Dublin -&gt; Belfast = 605</code>, and so the answer is 605 in this example.</p>
 <p>What is the distance of the shortest route?</p>
-<h3 id="thoughts-17"><a class="header" href="#thoughts-17">Thoughts</a></h3>
+<h3 id="thoughts-18"><a class="header" href="#thoughts-18">Thoughts</a></h3>
 <p>These problems always scare me because I suck at them. In Python, I would use <a href="https://docs.python.org/3/library/itertools.html#itertools.permutations">itertools.permutations</a> to get the list of distinct possible routes, sum them up and keep the lowest value, but I don't have that function in Rust. The Python docs have and example of how to write the algorthim and I am hesitant to transcribe it to Rust because I do not fully understand (and will most likely make a mistake...).</p>
 <p>I know that this is a simple problem. I know that combinatorially their are <code>n!/2</code> options. <code>n!</code> because you have <code>n</code> options for the first place and <code>n-1</code> options for the next, and so on. You divide by <code>2</code> because, with reference to this problem, going forward and going backwards gives you the same value. So in there example, we had 3 options, which leads to 3! (6) total permutations, but half of these permuations give identical results.</p>
 <p>The input file only has 7 options. <code>7!</code>. I was going to say that <code>7!/2</code> was small enough to do by hand, but then I opened up a calculator and discovered thats <code>2,520</code> options...</p>
@@ -2095,7 +2163,7 @@ fn main() {
 <p>He can still start and end at any two (different) locations he wants, and he still must visit each location exactly once.</p>
 <p>For example, given the distances above, the longest route would be 982 via (for example) Dublin -&gt; London -&gt; Belfast.</p>
 <p>What is the distance of the longest route?</p>
-<h3 id="thoughts-18"><a class="header" href="#thoughts-18">Thoughts:</a></h3>
+<h3 id="thoughts-19"><a class="header" href="#thoughts-19">Thoughts:</a></h3>
 <p>I should be able to copy and paste the solution from part 1 and change the operators from less than to greater than and get the answer... I hope that's it because I really do not want to spend too much more time on this problem.</p>
 <h3 id="solution-part-2-1"><a class="header" href="#solution-part-2-1">Solution Part 2</a></h3>
 <p>Change operators and some variable names from like min to max and shortest to longest, but that was all.</p>
@@ -2216,7 +2284,7 @@ fn main() {
 </blockquote>
 <p>Starting with the digits in your puzzle input, apply this process 40 times. What is the length of the result?</p>
 <p>Your puzzle input is 1113122113.</p>
-<h3 id="thoughts-19"><a class="header" href="#thoughts-19">Thoughts</a></h3>
+<h3 id="thoughts-20"><a class="header" href="#thoughts-20">Thoughts</a></h3>
 <p>This seems like a string builder program. I read in the input string, I count how many times I see the same char, then I write it out literally.</p>
 <p>Take 111221 for example:</p>
 <ul>
@@ -2306,7 +2374,7 @@ fn main() {
 </blockquote>
 <p>Given Santa's current password (your puzzle input), what should his next password be?</p>
 <p>Your puzzle input is <code>hxbxwxba</code>.</p>
-<h3 id="thoughts-20"><a class="header" href="#thoughts-20">Thoughts</a></h3>
+<h3 id="thoughts-21"><a class="header" href="#thoughts-21">Thoughts</a></h3>
 <p>The password being a fixed size great help. 8 characters is small enough that I can create a function for each one of these checks and not care how long it will take to process.</p>
 <p>For no reason in particular, I am thinking about fancy stuff like a validate function that takes a list of functions and a string as input. The string will then get tested against all the functions in the list and if any of the function return false, it will return false.</p>
 <p>The reason I can do this is because all the validation checks have the same function signature, which is that they take in a string reference and return a boolean.</p>
@@ -2521,7 +2589,7 @@ fn main() {
 </blockquote>
 <p>You will not encounter any strings containing numbers.</p>
 <p>What is the sum of all numbers in the document?</p>
-<h3 id="thoughts-21"><a class="header" href="#thoughts-21">Thoughts</a></h3>
+<h3 id="thoughts-22"><a class="header" href="#thoughts-22">Thoughts</a></h3>
 <p>I don't want to use a JSON library for this. This seems like a string parser will do. I think I an use a state machine to capture the number.</p>
 <p>States:</p>
 <ul>
@@ -2572,7 +2640,7 @@ fn main() {
 <blockquote>
 <p>[1,"red",5] has a sum of 6, because "red" in an array has no effect.</p>
 </blockquote>
-<h3 id="thoughts-22"><a class="header" href="#thoughts-22">Thoughts</a></h3>
+<h3 id="thoughts-23"><a class="header" href="#thoughts-23">Thoughts</a></h3>
 <p>They want me to keep track of the curly brackets. That said, this is pretty tricky because "red" could be the last item in the object, and, if it is, I have to ignore all the numbers collected in that object.</p>
 <p>I also have to take nested children into consideration as well. So...Is this like a Stack where each entry represents a level of depth? Maybe not a stack. I think I can use a Vec and have each index be a sum for that depth. If I see "red", everything at the idex and past it get set to zero.</p>
 <p>At the end of the program, I sum the Vec.</p>
