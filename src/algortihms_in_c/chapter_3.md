@@ -191,3 +191,25 @@ That aside, the Python translation was straightforward. I added `__repr__` metho
 For the LinkedList, having the dummy `head` and `z` worked wonders in making the `insert_after` and the `delete_next` methods simple. It also does not limit the your options for new Nodes because the terminal node `z` is a pointer check to the class instance and not a equality check. So, in theory, I can add other nodes with the same properties of `z` to my linked_list and it should work fine.
 
 I also liked how easy it was to skip the dummy nodes when iterating over the list. If you don't look at the implementation, (based off `main` and the output) you would never know that dummy nodes are being used. 
+
+## Linked List -- Continued
+
+The reader is encouraged to check these C implementations against the English language description given above. In particular, it is instructive at this stage to consider why the dummy nodes are useful. First, if the convention were to have `head` point to the beginning of the list rather than having a `head` node, then the `insert` procedure would need a special test for insertion at the beginning of the list. Second, the convention for `z` protects the `delete` procedure from (for exampe) a call to delete an item from an empty list.
+
+Another common convention for terminating a list is to make the last node point to the first, rather than using either of the dummy odes `head` of `z`. This is called a _circular list_: it allows a program to go around and around the list. Using one dummy node to mark the beginning (and the end) of the list and to help handle the case of the empty list is sometimes convenient.
+
+It is possible to support the operation "find the item _before_ a given item" by using a _doubly linked list_ in which we maintain two links for each node, one to the item before, one to the item after. The cost of providing this extra capability is doubling the number of link manipulations per basic operation, so it is not normally used unless specifically called for. As mentioned above, however, if a node is to be deleted and only a link to the node is available (perhaps it is also part of some other data structure), double linking may be called for.
+
+```admonish note
+The "Josephus problem" describe in the next paragraph would never be written in a modern book, but I find it very interesting that something like this was every okay to mention in a tech book.
+```
+
+We'll see many examples of applications of these and other basic operations on linked lists in later chapters. Since the operations involve only a few statements, we noramlly manipulate the list directly rather than use the precise procedure above. As an example, we consider next a program for solving the so-called "Josephus problem" in the spirit of Eratosthenes. We imagine that `N` people have decided to commit mass suicide by arranging themselves in a circle and killing the `M`th persion around the circle, closing ranks as each person drops out of the circle. The problem is to find out which person is the last to die (though perhaps that person would have a change of heart at the end!), or, more generally, to find the order in which the people are executed. For example, if `N` = 9 and `M` = 5, then people are killed in the order of 5, 1, 7, 4, 3, 6, 9, 2, 8. The following program reads in `N` and `M` and prints out this ordering:
+
+```admonish note
+The original code does not have comments. I added them for clarity.
+```
+
+```c
+{{#include ../../Algorithms_in_C/ch_3/circular_linked_list/josephus_problem.c}}
+```
