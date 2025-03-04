@@ -449,6 +449,74 @@ Delete Node(key=10)
 <p>That aside, the Python translation was straightforward. I added <code>__repr__</code> methods to both the Node and LinkedList so that I could see the output. The tricky part about that is that the Node method cannot print <code>node.next</code> because <code>z</code> points it itself, so it hits your recursive upper limit and crashes.</p>
 <p>For the LinkedList, having the dummy <code>head</code> and <code>z</code> worked wonders in making the <code>insert_after</code> and the <code>delete_next</code> methods simple. It also does not limit the your options for new Nodes because the terminal node <code>z</code> is a pointer check to the class instance and not a equality check. So, in theory, I can add other nodes with the same properties of <code>z</code> to my linked_list and it should work fine.</p>
 <p>I also liked how easy it was to skip the dummy nodes when iterating over the list. If you don't look at the implementation, (based off <code>main</code> and the output) you would never know that dummy nodes are being used.</p>
+<h2 id="linked-list----continued"><a class="header" href="#linked-list----continued">Linked List -- Continued</a></h2>
+<p>The reader is encouraged to check these C implementations against the English language description given above. In particular, it is instructive at this stage to consider why the dummy nodes are useful. First, if the convention were to have <code>head</code> point to the beginning of the list rather than having a <code>head</code> node, then the <code>insert</code> procedure would need a special test for insertion at the beginning of the list. Second, the convention for <code>z</code> protects the <code>delete</code> procedure from (for exampe) a call to delete an item from an empty list.</p>
+<p>Another common convention for terminating a list is to make the last node point to the first, rather than using either of the dummy odes <code>head</code> of <code>z</code>. This is called a <em>circular list</em>: it allows a program to go around and around the list. Using one dummy node to mark the beginning (and the end) of the list and to help handle the case of the empty list is sometimes convenient.</p>
+<p>It is possible to support the operation "find the item <em>before</em> a given item" by using a <em>doubly linked list</em> in which we maintain two links for each node, one to the item before, one to the item after. The cost of providing this extra capability is doubling the number of link manipulations per basic operation, so it is not normally used unless specifically called for. As mentioned above, however, if a node is to be deleted and only a link to the node is available (perhaps it is also part of some other data structure), double linking may be called for.</p>
+<div id="admonition-note-5" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-5-title">
+<div class="admonition-title">
+<div id="admonition-note-5-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-note-5"></a>
+</div>
+<div>
+<p>The "Josephus problem" describe in the next paragraph would never be written in a modern book, but I find it very interesting that something like this was every okay to mention in a tech book.</p>
+</div>
+</div>
+<p>We'll see many examples of applications of these and other basic operations on linked lists in later chapters. Since the operations involve only a few statements, we noramlly manipulate the list directly rather than use the precise procedure above. As an example, we consider next a program for solving the so-called "Josephus problem" in the spirit of Eratosthenes. We imagine that <code>N</code> people have decided to commit mass suicide by arranging themselves in a circle and killing the <code>M</code>th persion around the circle, closing ranks as each person drops out of the circle. The problem is to find out which person is the last to die (though perhaps that person would have a change of heart at the end!), or, more generally, to find the order in which the people are executed. For example, if <code>N</code> = 9 and <code>M</code> = 5, then people are killed in the order of 5, 1, 7, 4, 3, 6, 9, 2, 8. The following program reads in <code>N</code> and <code>M</code> and prints out this ordering:</p>
+<div id="admonition-note-6" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-6-title">
+<div class="admonition-title">
+<div id="admonition-note-6-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-note-6"></a>
+</div>
+<div>
+<p>The original code does not have comments. I added them for clarity.</p>
+</div>
+</div>
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+struct node {
+  int key;
+  struct node *next;
+}
+
+main() {
+  int i, N, M;
+  struct node *t, *x;
+
+  // Capture input from stdin
+  scanf("%d %d", &amp;N, &amp;M);
+
+  // Creating the linked list of number
+  t = (struct node *)malloc(sizeof *t);
+  t-&gt;key = 1;
+  x = t;
+  for (i = 2; i &lt;= N; i++) {
+    t-&gt;next = (struct node *)malloc(sizeof *t);
+    t = t-&gt;next;
+    t-&gt;key = i;
+  }
+
+  // Pointing the last node to the first node.
+  // Makes the linked list circular
+  t-&gt;next = x;
+
+  // Josephus problem
+  while (t != t-&gt;next) {
+    for (i = 1; i &lt; M; i++)
+      t = t-&gt;next;
+    printf("%d ", t-&gt;next-&gt;key);
+    x = t-&gt;next;
+    t-&gt;next = t-&gt;next-&gt;next;
+    free(x);
+  }
+  printf("%d\n", t-&gt;key);
+}
+</code></pre>
 
                     </main>
 
