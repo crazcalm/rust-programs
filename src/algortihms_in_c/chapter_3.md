@@ -206,10 +206,25 @@ The "Josephus problem" describe in the next paragraph would never be written in 
 
 We'll see many examples of applications of these and other basic operations on linked lists in later chapters. Since the operations involve only a few statements, we noramlly manipulate the list directly rather than use the precise procedure above. As an example, we consider next a program for solving the so-called "Josephus problem" in the spirit of Eratosthenes. We imagine that `N` people have decided to commit mass suicide by arranging themselves in a circle and killing the `M`th persion around the circle, closing ranks as each person drops out of the circle. The problem is to find out which person is the last to die (though perhaps that person would have a change of heart at the end!), or, more generally, to find the order in which the people are executed. For example, if `N` = 9 and `M` = 5, then people are killed in the order of 5, 1, 7, 4, 3, 6, 9, 2, 8. The following program reads in `N` and `M` and prints out this ordering:
 
+### C implementation
 ```admonish note
 The original code does not have comments. I added them for clarity.
 ```
 
 ```c
 {{#include ../../Algorithms_in_C/ch_3/circular_linked_list/josephus_problem.c}}
+```
+
+### Python Implementation
+The Python code stays pretty true to the C implementation.
+
+```python
+{{#include ../../Algorithms_in_C/ch_3/circular_linked_list/josephus_problem.py}}
+```
+
+### Rust Implementation
+In Rust, I cannot use Linked List in they way Python and C do it, so I implemented a (bad) solution to the problem using a Vec.
+
+```Rust
+{{#include ../../Algorithms_in_C/ch_3/circular_linked_list/josephus/src/main.rs}}
 ```

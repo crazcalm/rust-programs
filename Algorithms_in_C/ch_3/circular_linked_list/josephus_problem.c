@@ -10,7 +10,7 @@ main() {
   int i, N, M;
   struct node *t, *x;
 
-  // Capture input from stdin
+  // Capture user input
   scanf("%d %d", &N, &M);
 
   // Creating the linked list of number
