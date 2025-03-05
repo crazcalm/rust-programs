@@ -465,6 +465,7 @@ Delete Node(key=10)
 </div>
 </div>
 <p>We'll see many examples of applications of these and other basic operations on linked lists in later chapters. Since the operations involve only a few statements, we noramlly manipulate the list directly rather than use the precise procedure above. As an example, we consider next a program for solving the so-called "Josephus problem" in the spirit of Eratosthenes. We imagine that <code>N</code> people have decided to commit mass suicide by arranging themselves in a circle and killing the <code>M</code>th persion around the circle, closing ranks as each person drops out of the circle. The problem is to find out which person is the last to die (though perhaps that person would have a change of heart at the end!), or, more generally, to find the order in which the people are executed. For example, if <code>N</code> = 9 and <code>M</code> = 5, then people are killed in the order of 5, 1, 7, 4, 3, 6, 9, 2, 8. The following program reads in <code>N</code> and <code>M</code> and prints out this ordering:</p>
+<h3 id="c-implementation-2"><a class="header" href="#c-implementation-2">C implementation</a></h3>
 <div id="admonition-note-6" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-6-title">
 <div class="admonition-title">
 <div id="admonition-note-6-title">
@@ -488,7 +489,7 @@ main() {
   int i, N, M;
   struct node *t, *x;
 
-  // Capture input from stdin
+  // Capture user input
   scanf("%d %d", &amp;N, &amp;M);
 
   // Creating the linked list of number
@@ -515,6 +516,84 @@ main() {
     free(x);
   }
   printf("%d\n", t-&gt;key);
+}
+</code></pre>
+<h3 id="python-implementation-1"><a class="header" href="#python-implementation-1">Python Implementation</a></h3>
+<p>The Python code stays pretty true to the C implementation.</p>
+<pre><code class="language-python">class Node:
+    def __init__(self, key, next=None):
+        self.key = key
+        self.next = next
+
+
+def main():
+    node = Node(1, None)
+
+    # Capture user input
+    N, M = input("Set N and M (example: '9 5': ").split()
+    N = int(N)
+    M = int(M)
+
+    # Create linked list
+    first_node = node
+    for x in range(2, N + 1):
+        node.next = Node(x)
+        node = node.next
+
+    # Make the linked list into a circular linked list
+    node.next = first_node
+
+    # Josephus problem
+    while node != node.next:
+        for _ in range(1, M):
+            node = node.next
+        print(f"{node.next.key}", end=" ")
+        node.next = node.next.next
+
+    print(f"{node.key}")
+
+
+if __name__ == "__main__":
+    main()
+        
+</code></pre>
+<h3 id="rust-implementation-2"><a class="header" href="#rust-implementation-2">Rust Implementation</a></h3>
+<p>In Rust, I cannot use Linked List in they way Python and C do it, so I implemented a (bad) solution to the problem using a Vec.</p>
+<pre><code class="language-Rust">use std::io;
+
+fn main() {
+    println!("Set N and M (example: '9 5'):");
+
+    // Capture user input
+    let mut buffer = String::new();
+    io::stdin().read_line(&amp;mut buffer).unwrap();
+
+    // Parse user input
+    let data: Vec&lt;usize&gt; = buffer
+        .split_whitespace()
+        .collect::&lt;Vec&lt;_&gt;&gt;()
+        .iter()
+        .map(|x| x.parse().expect("Expect a digit"))
+        .collect();
+
+    #[allow(non_snake_case)]
+    let N = data[0];
+    #[allow(non_snake_case)]
+    let M = data[1];
+
+    // Create List
+    let mut list: Vec&lt;usize&gt; = (1..=N).collect();
+
+    // Josephus problem
+    while list.len() &gt; 1 {
+        for _ in 1..M {
+            // Rotate the items in the list to the left
+            list.rotate_left(1);
+        }
+        let data = list.remove(0);
+        print!("{data} ")
+    }
+    print!("{}", list[0]);
 }
 </code></pre>
 
