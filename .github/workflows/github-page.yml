@@ -25,6 +25,7 @@ jobs:
       - run: |
           cargo install mdbook-admonish
           cargo install mdbook-mermaid
+          cargo install mdbook-repl
           mdbook-admonish install .
           mdbook-mermaid install .
           mdbook build
