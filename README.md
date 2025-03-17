@@ -7,3 +7,5 @@ Programming training
 ## Dev Dependencies:
 - [mdbook-admonish](https://github.com/tommilligan/mdbook-admonish)
 - [mdbook-mermaid.js](https://github.com/badboy/mdbook-mermaid)
+- [mdbook-repl](https://github.com/MR-Addict/mdbook-repl/tree/main)
+  - [user guide](https://mr-addict.github.io/mdbook-repl/)
