@@ -25,9 +25,9 @@
         <link rel="stylesheet" href="fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="highlight.css">
-        <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="./mdbook-admonish.css">
@@ -248,7 +248,28 @@ fn main() {
 <p>We do not have <em>scanf</em> in Rust. As a result, I had to scan and parse the input myself, which led to a lot of extra code being added to the main function.</p>
 <h3 id="thoughts"><a class="header" href="#thoughts">Thoughts</a></h3>
 <p>I really appreciated seeing <em>gcd</em> implemented using subtraction. Previously, I have only seen it implemented using remainder operators or mod operators, which have a direct relationship to subtraction, but I never think of them being on the same level. For example, I can understand someone not knowing modular arithmetic, but I would be completely surprised if they did not know how to subtract. So, for me, seeing this implemented using subtraction is a suble remnder that all this stuff can be written in such basic forms that it is hard to imagine anything of this stuff every being "difficult".</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-3-elementary-data-structures"><a class="header" href="#chapter-3-elementary-data-structures">Chapter 3: Elementary Data Structures</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><!-- Custom REPL Style -->
+<style>
+  .repl {
+    margin-block: 2rem;
+    position: relative;
+    isolation: isolate;
+  }
+  .repl iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .repl iframe.hide {
+    top: 0;
+    left: 0;
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+  }
+</style>
+<h1 id="chapter-3-elementary-data-structures"><a class="header" href="#chapter-3-elementary-data-structures">Chapter 3: Elementary Data Structures</a></h1>
 <h2 id="arrays"><a class="header" href="#arrays">Arrays</a></h2>
 <p>Perhaps the most fundamental data structure is the <em>array</em>, which is defined as a primitive in C and most other programming languages. An array is a fixed number of data items that are stored contiguously and that are accessed by an index. We refer to the ith element of the array <code>a</code> as <code>a[i]</code>. It is the responsibility of the programmer to store something meaningful in an array position <code>a[i]</code> before referring to it; neglecting this is on of the most common programming mistakes.</p>
 <p>A simple example of the useof an array is given by the following program, which prints out all the prime numbers less than 1000. The method used, which dates back to the 3rd century B.C., is called the "sieve of Erathosthenes":</p>
@@ -480,6 +501,9 @@ main(){}
 <p>I was unable to write this in Rust. It is not possible with Safe Rust because all of these nodes are owned by the linked_list and the main function that is passing them into these methods. I believe this is possible with Unsafe Rust, but I do not know how to write Unsafe Rust and I cannot justify that rabbit hole for this book.</p>
 <p>The compromise is that I wrote it in Python.</p>
 <h3 id="python-implementation"><a class="header" href="#python-implementation">Python implementation</a></h3>
+<div class="repl" data-id="da74f6ae-0889-48b4-b3f6-771e4195f178" data-readonly="false" data-lang="python">
+  <iframe class="hide" loading="lazy" name="mdbook-python-repl" allow="clipboard-write" src="https://mr-addict.github.io/mdbook-repl/embed/"></iframe>
+</div>
 <pre><code class="language-python">class Node:
     def __init__(self, key, node=None):
         self.key = key
@@ -615,6 +639,9 @@ main() {
 </code></pre>
 <h3 id="python-implementation-1"><a class="header" href="#python-implementation-1">Python Implementation</a></h3>
 <p>The Python code stays pretty true to the C implementation.</p>
+<div class="repl" data-id="aafd6106-414d-4377-bb15-97fcbac0622c" data-readonly="false" data-lang="python">
+  <iframe class="hide" loading="lazy" name="mdbook-python-repl" allow="clipboard-write" src="https://mr-addict.github.io/mdbook-repl/embed/"></iframe>
+</div>
 <pre><code class="language-python">class Node:
     def __init__(self, key, next=None):
         self.key = key
@@ -650,7 +677,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-        
 </code></pre>
 <h3 id="rust-implementation-2"><a class="header" href="#rust-implementation-2">Rust Implementation</a></h3>
 <p>In Rust, I cannot use Linked List in they way Python and C do it, so I implemented a (bad) solution to the problem using a Vec.</p>
@@ -691,6 +717,49 @@ fn main() {
     print!("{}", list[0]);
 }
 </code></pre>
+<!-- Custom REPL Script -->
+<script>
+  document.querySelectorAll(".repl").forEach((replElement) => {
+    const iframeElement = replElement.querySelector("iframe");
+    const id = replElement.getAttribute("data-id");
+    const lang = replElement.getAttribute("data-lang");
+    const code = getCode(replElement.nextElementSibling);
+    const readonly = replElement.getAttribute("data-readonly") === "true";
+    let theme = mapTheme(localStorage.getItem("mdbook-theme") || document.querySelector(".theme.theme-selected")?.id);
+    const postmessage = (msg) => iframeElement.contentWindow.postMessage({ repl: msg }, "*");
+    function mapTheme(bookTheme) {
+      return bookTheme === "light" || bookTheme === "rust" ? "light" : "dark";
+    }
+    function getCode(element) {
+      // remove all the boring elements
+      const code = element.cloneNode(true);
+      code.querySelectorAll(".boring").forEach((boring) => boring.remove());
+      return code.innerText.trim();
+    }
+    window.addEventListener("message", (event) => {
+      const repl = event.data.repl;
+      if (event.source === window || !repl) return;
+      // if the id is empty, then it's the first time the iframe is loaded
+      if (repl.id === "") {
+        postmessage({ id, editor: { theme, lang, code, readonly, defaultCode: code } });
+        return;
+      }
+      if (repl.id !== id) return;
+      // update the iframe height
+      replElement.style.height = repl.dimensions.height + "px";
+      // show the iframe and hide the pre element
+      iframeElement.classList.remove("hide");
+      replElement.nextElementSibling.style.display = "none";
+    });
+    // listen to theme change
+    document.querySelectorAll("button[role='menuitem'].theme").forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        theme = mapTheme(event.target.id);
+        postmessage({ id, editor: { theme } });
+      });
+    });
+  });
+</script>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="day-1-not-quite-lisp"><a class="header" href="#day-1-not-quite-lisp">Day 1: Not Quite Lisp</a></h1>
 <p><a href="https://adventofcode.com/2015/day/1">Link to problem</a></p>
 <h2 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h2>
