@@ -33,10 +33,11 @@
         <link rel="stylesheet" href="./mdbook-admonish.css">
 
 
-        <!-- Provide site root to javascript -->
+        <!-- Provide site root and default themes to javascript -->
         <script>
-            var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc.js"></script>
@@ -46,8 +47,8 @@
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                var theme = localStorage.getItem('mdbook-theme');
-                var sidebar = localStorage.getItem('mdbook-sidebar');
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -61,7 +62,8 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            var theme;
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
@@ -74,8 +76,8 @@
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var sidebar = null;
-            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
@@ -111,6 +113,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
@@ -501,7 +504,7 @@ main(){}
 <p>I was unable to write this in Rust. It is not possible with Safe Rust because all of these nodes are owned by the linked_list and the main function that is passing them into these methods. I believe this is possible with Unsafe Rust, but I do not know how to write Unsafe Rust and I cannot justify that rabbit hole for this book.</p>
 <p>The compromise is that I wrote it in Python.</p>
 <h3 id="python-implementation"><a class="header" href="#python-implementation">Python implementation</a></h3>
-<div class="repl" data-id="da74f6ae-0889-48b4-b3f6-771e4195f178" data-readonly="false" data-lang="python">
+<div class="repl" data-id="9f24aeff-bed0-494b-95b1-27175f3ab486" data-readonly="false" data-lang="python">
   <iframe class="hide" loading="lazy" name="mdbook-python-repl" allow="clipboard-write" src="https://mr-addict.github.io/mdbook-repl/embed/"></iframe>
 </div>
 <pre><code class="language-python">class Node:
@@ -552,22 +555,73 @@ def main():
 if __name__ == "__main__":
     main()
 </code></pre>
-<p><strong>Output:</strong></p>
-<pre><code>❯ python linked_list.py 
-0: Node(key=5)
-1: Node(key=10)
-2: Node(key=15)
-
-Delete Node(key=10)
-
-0: Node(key=5)
-1: Node(key=15)
-</code></pre>
 <h4 id="thoughts-1"><a class="header" href="#thoughts-1">Thoughts</a></h4>
 <p>I'm kind of angry with how easy it was to translate this into Python. I love Rust, but it always hurts when you try to do "simple" things in programming that are actually extremely difficult in Rust and you end up struggling for hours.</p>
 <p>That aside, the Python translation was straightforward. I added <code>__repr__</code> methods to both the Node and LinkedList so that I could see the output. The tricky part about that is that the Node method cannot print <code>node.next</code> because <code>z</code> points it itself, so it hits your recursive upper limit and crashes.</p>
 <p>For the LinkedList, having the dummy <code>head</code> and <code>z</code> worked wonders in making the <code>insert_after</code> and the <code>delete_next</code> methods simple. It also does not limit the your options for new Nodes because the terminal node <code>z</code> is a pointer check to the class instance and not a equality check. So, in theory, I can add other nodes with the same properties of <code>z</code> to my linked_list and it should work fine.</p>
 <p>I also liked how easy it was to skip the dummy nodes when iterating over the list. If you don't look at the implementation, (based off <code>main</code> and the output) you would never know that dummy nodes are being used.</p>
+<h3 id="javascript-implementation"><a class="header" href="#javascript-implementation">JavaScript Implementation</a></h3>
+<div class="repl" data-id="d6e383fe-bc39-42a0-94f7-685a7c03fa5d" data-readonly="false" data-lang="javascript">
+  <iframe class="hide" loading="lazy" name="mdbook-javascript-repl" allow="clipboard-write" src="https://mr-addict.github.io/mdbook-repl/embed/"></iframe>
+</div>
+<pre><code class="language-javascript">class Node {
+    constructor(key, node) {
+        this.key = key;
+        this.node = node;
+    }
+    print() {
+        console.log(`Node(${this.key})`);
+    }
+}
+
+class LinkedList {
+    constructor() {
+        this.head = new Node(null, null);
+        this.z = new Node(null, null);
+        this.head.next = this.z;
+        this.z.next = this.z; // Sentinel node
+    }
+
+    delete_next(node) {
+        node.next = node.next.next;
+    }
+
+    insert_after(value, node) {
+        const newNode = new Node(value, node.next);
+        node.next = newNode;
+        return newNode;
+    }
+    print() {
+        let current = this.head.next;
+        while (current != null) {
+            current.print();
+            current = current.next;
+        }
+    }
+}
+
+
+function main() {
+    const linkedList = new LinkedList();
+    nodeOne = linkedList.insert_after(5, linkedList.head);
+    nodeTwo = linkedList.insert_after(10, nodeOne);
+    nodeThree = linkedList.insert_after(15, nodeTwo);
+
+    console.log("Print linkedList")
+    linkedList.print()
+
+    console.log(`delete ${nodeTwo.key}`);
+    linkedList.delete_next(nodeOne);
+    console.log("\nPrint linkedList");
+    linkedList.print();
+}
+
+main();
+</code></pre>
+<h4 id="thoughts-2"><a class="header" href="#thoughts-2">Thoughts:</a></h4>
+<p>JavaScript is strange, VS Code is strange and I'm so tired that I am surprised I was able to do anything.</p>
+<p>Also, I hate the copilit suggestions. It interrupts my thoughts. No matter what I do, the suggestions are still there?!</p>
+<p>I think the suggestions are gone... FINALLY!</p>
 <h2 id="linked-list----continued"><a class="header" href="#linked-list----continued">Linked List -- Continued</a></h2>
 <p>The reader is encouraged to check these C implementations against the English language description given above. In particular, it is instructive at this stage to consider why the dummy nodes are useful. First, if the convention were to have <code>head</code> point to the beginning of the list rather than having a <code>head</code> node, then the <code>insert</code> procedure would need a special test for insertion at the beginning of the list. Second, the convention for <code>z</code> protects the <code>delete</code> procedure from (for exampe) a call to delete an item from an empty list.</p>
 <p>Another common convention for terminating a list is to make the last node point to the first, rather than using either of the dummy odes <code>head</code> of <code>z</code>. This is called a <em>circular list</em>: it allows a program to go around and around the list. Using one dummy node to mark the beginning (and the end) of the list and to help handle the case of the empty list is sometimes convenient.</p>
@@ -639,7 +693,7 @@ main() {
 </code></pre>
 <h3 id="python-implementation-1"><a class="header" href="#python-implementation-1">Python Implementation</a></h3>
 <p>The Python code stays pretty true to the C implementation.</p>
-<div class="repl" data-id="aafd6106-414d-4377-bb15-97fcbac0622c" data-readonly="false" data-lang="python">
+<div class="repl" data-id="9cb97b32-ed2a-49cb-bd41-1e34e95a86c2" data-readonly="false" data-lang="python">
   <iframe class="hide" loading="lazy" name="mdbook-python-repl" allow="clipboard-write" src="https://mr-addict.github.io/mdbook-repl/embed/"></iframe>
 </div>
 <pre><code class="language-python">class Node:
@@ -717,6 +771,156 @@ fn main() {
     print!("{}", list[0]);
 }
 </code></pre>
+<h2 id="back-to-the-book"><a class="header" href="#back-to-the-book">Back to the Book:</a></h2>
+<p>The program uses a circular linked list to simulate the sequence of executions directly. First, the list is built with keys from 1 to <code>N</code>: the variable <code>x</code> holds onto the beginning of the list as it is built, then the pointer in the last node in the list is set to <code>x</code>. Then, the program proceeds through the list, counting through <code>M</code> - 1 items and deleting the next, until only one is left (which then points to itself). Note the call to <code>free</code> for the delete, which corresponds to an execution: this is the opposite of <code>malloc</code> as mentioned before.</p>
+<h2 id="storage-allocation"><a class="header" href="#storage-allocation">Storage Allocation</a></h2>
+<p>C's pointers provide a convenient way to implement lists, as shown above, but there aere alternatives. In this section we discuss how to use <code>arrays</code> to implement linked lists and how this is related to the actual representation of memory of a computer, so that analysis of how a data structure is implemented as an array will give you some insight into how it might be represented at a low level in the computer. In particular, we're interested in seeing how several lists might be represented simultaneously.</p>
+<p>In a direct-array representation of linked lists, we use indices instead of links. One way to proceed would be to define an array of records like those above, but using <code>integers</code> (for array indices) rather than pointers for the <code>next</code> field. An alternative, which often turns out to be more convenient, is to use "parallel arrays": we keep the items in an array <code>key</code> and the links in an array <code>next</code>. Thus, <code>key[next][head]</code> refers ti the information associated with the first item on the list, <code>key[next[next[head]]]</code> to the second, etc. The advantage of using parallel arrays is that the structure can be built "on top of" the data: the array <code>key</code> contains data and only data -- all the structure is in the parallel array <code>next</code>. For example, another list can be built using the same data array and a different parallel "link" array, or more data can be added with more parallel arrays. The following code implements the basic list operations using parallel arrays:</p>
+<h3 id="c-implementation-3"><a class="header" href="#c-implementation-3">C Implementation:</a></h3>
+<p>The errors you get when you try to compile code snippets from books can be rough, especially when you do not know the language well.</p>
+<pre><code class="language-c">/*
+  The original code used `max+2` and not 12.
+
+  I changed it because it was giving me compile errors.
+ */
+int key[12], next[12];
+int x, head, z;
+
+int listinitialize()
+{
+  head = 0; z = 1; x = 2;
+  next[head] = z; next[z] = z;
+ };
+int deletenext(int t)
+  { next[t] = next[next[t]]; };
+int insertafter(int v, int t)
+{
+  key[x] = v; next[x] = next[t];
+  next[t] = x;
+  return x++;
+};
+
+int main(){
+}
+</code></pre>
+<h3 id="rust-implementation-3"><a class="header" href="#rust-implementation-3">Rust Implementation:</a></h3>
+<p>I wrote this about two weeks ago, so I am a bit fuzzy on how I felt at the time of writing it. All I know is that I spent hours trying to write a node based linked list and, after giving up, I came back, I think a day later, and struggled translating this to Rust. I believe the tricky part was getting the indices right. If <code>insert_after</code> does not return the correct value for the next index, everything becomes wonky.</p>
+<pre><code class="language-Rust">const SIZE: usize = 10;
+
+#[derive(Debug)]
+struct List&lt;T&gt;
+where
+    T: Default + std::fmt::Debug + Copy,
+{
+    head: usize,
+    z: usize,
+    x: usize,
+
+    key: [T; SIZE],
+    next: [usize; SIZE],
+}
+
+impl&lt;T: Default + std::fmt::Debug + Copy&gt; List&lt;T&gt; {
+    pub fn new() -&gt; Self {
+        let head = 0;
+        let z = 1;
+        let x = 2;
+        // The Copy Trait is being used here because the default value is being
+        // copied for each place holder
+        let key = [T::default(); SIZE];
+        let mut next = [0; SIZE];
+
+        next[head] = z as usize;
+        next[z] = z as usize;
+
+        Self {
+            head,
+            z,
+            x,
+            key,
+            next,
+        }
+    }
+
+    pub fn delete_next(&amp;mut self, t: usize) {
+        self.next[t] = self.next[self.next[t]]
+    }
+
+    pub fn insert_after(&amp;mut self, v: T, t: usize) -&gt; usize {
+        self.key[self.x] = v;
+        self.next[self.x] = self.next[t];
+        self.next[t] = self.x;
+        self.x += 1;
+        self.x - 1
+    }
+
+    pub fn print(&amp;self) {
+        let mut n = self.next[0];
+
+        while n != self.z {
+            println!("{:?}", self.key[n]);
+            n = self.next[n];
+        }
+    }
+}
+
+fn main() {
+    let mut list: List&lt;i32&gt; = List::new();
+    let mut next = list.insert_after(5, 0);
+    for x in [10, 15, 20] {
+        next = list.insert_after(x, next);
+        println!("{:?} -- next: {next}", list);
+    }
+    list.insert_after(100, next);
+    println!("{:?}", list);
+
+    list.print();
+
+    list.delete_next(4);
+    println!("{:?}", list);
+    list.print();
+}
+</code></pre>
+<h2 id="continue-the-book"><a class="header" href="#continue-the-book">Continue the Book</a></h2>
+<p>Each call on the storage allocation function <code>malloc</code> is replaced by simply incrementing the "pointer" <code>x</code>: it keeps track of the next unused position in the array.</p>
+<div id="admonition-note-7" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-7-title">
+<div class="admonition-title">
+<div id="admonition-note-7-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="algortihms_in_c/chapter_3.html#admonition-note-7"></a>
+</div>
+<div>
+<p>I'm skipping the Figure examples in this section because I cannot draw them.</p>
+</div>
+</div>
+<p>The crux of the matter is to consider how the built-in procedures <code>malloc</code> and <code>free</code> might be implemented. We presume that the only space for nodes and links are the arrays we've been using; this presumption puts us in the situation the system is in when it has to provide the capability to grow and shrink a data structure wuth a fixed data structure (the memory itself). For example, suppose that the node containing <code>A</code> is to be deleted from the example in Figure 3.5 and then disposed of. It is one thing to rearrange the links so that node is no longer hooked into the list, but what do we do with the space occupied by that node? And how do we find space for a node when <code>new</code> is called and more space is needed?</p>
+<p>On reflection, the reader will see that the solution is clear: a linked list should be used to keep track of the free space! We refer to this list as the "free list." Then, when we <code>delete</code> a node from our list we dispose of it by <code>inserting</code> it into the free list, and when we need a <code>new</code> node, we get it by <code>deleting</code> it from the free list. This mechanism allows several different lists to occupy the same array.</p>
+<p>When storage management is provided by the system, as in C, there is no reason to override in this way. The description above is intented to indicate how the storage management is done by the system. The actual problem faced by the system is rather more complex, as not all nodes are necessarily of the same size. Also, some systems relieve the user of the need to explicitly <code>free</code> nodes by using <code>garbage-collection</code> algorithms to remove any nodes not referenced by any link. A number of rather clever storage management algorithms have been developed to handle these two situations.</p>
+<h2 id="pushdown-stacks"><a class="header" href="#pushdown-stacks">Pushdown Stacks</a></h2>
+<p>We have been concentrating on structuring data in order to insert, delete, or access items arbitrarily. Actually, it turns out that for many applications, it suffices to consider various (rather stringent) restrictions on how the data structure is accessed. Such restrictions are beneficial in two ways: first, they can alleviate the need for the program using data structure to be concerned with its details (for example, keeping track of links to or indices of items); second, they allow simpler and more flexible implementations, since fewer operations need be supported.</p>
+<p>The most important restricted-access data structure is the <code>pushdown stack</code>. Only two basic operations are involved: one can <code>push</code> an item into the stack (insert it at the beginning) and <code>pop</code> an item (remove it from the beginning). A stack operates somewhat like a busy executive's "in" box: work piles up in a stack, and whenever the executive is ready to do some work, he takes it off the top. This might mean that something get stuck in the bottom of the stack for some time, but a good executive would presumably manage to get the stack emptied periodically. It turns out that sometimes a computer program is naturally organized in this way, postponing some tasks while doing others, and thus pushdown stacks appear as the fundamental data structure for many algorithms.</p>
+<p>We'll see a great many applications of stacks in the chapters that follow: for an introductory example, let's look at using stacks in evaluating arithmetic expressions. Suppose that one wants to find the value of a simple arithmetic expression involving multiplication and addition of integers, such as:</p>
+<pre><code>5 * (((9 + 8) * (4 * 6)) + 7
+</code></pre>
+<p>A stack is the ideal mechanism for saving intermediate results in such a calculation. The above example might be computed with the calls:</p>
+<pre><code>push(5);
+push(9);
+push(8);
+push(pop() + pop());
+push(4);
+push(6);
+push(pop()*pop());
+push(pop()*pop());
+push(7);
+push(pop()+pop());
+push(pop()*pop());
+printf("%d\n", pop());
+</code></pre>
+<p>The order in which the operations are performed is dictated by the parentheses in the expression, and by the convention that we proceed from left to right. Other conventions are possible; for example 4*6 could be computed before 9+8 in the example above. And in C, the order in which the two <code>pop()</code> operations is performed is unspecified, so slightly more complicated code is needed for noncommutative operators such as subtract and divide.</p>
+<p>Some calculators and some computing languages base their method of calculation on stack operations explicitly: every operations pops its argument from the stack and returns its results to the stack. As we'll see in Chapter 5, stacks often arise implicitly even when not used explicitly.</p>
+<p>The basic stack operations are easy to implement using linked lists as in the following implementation:</p>
+<h3 id="c-implementation-4"><a class="header" href="#c-implementation-4">C Implementation</a></h3>
 <!-- Custom REPL Script -->
 <script>
   document.querySelectorAll(".repl").forEach((replElement) => {
@@ -774,7 +978,7 @@ fn main() {
 ))) and )())()) both result in floor -3.
 </code></pre>
 <p>To what floor do the instructions take Santa?</p>
-<h3 id="thoughts-2"><a class="header" href="#thoughts-2">Thoughts</a></h3>
+<h3 id="thoughts-3"><a class="header" href="#thoughts-3">Thoughts</a></h3>
 <p>This is a warm up problem, so there is not much to think about, but I did appreciate the opportunity to think about the process I want to use to solve these problems. I just finished reading The C Programming Language book and the small commandline programs they built throughout that book was eye opening. So, for my solutions, I will pass the input to my programs via stdin.</p>
 <pre><pre class="playground"><code class="language-rust">use std::io;
 
@@ -799,7 +1003,7 @@ fn main() {
 ()()) causes him to enter the basement at character position 5.
 </code></pre>
 <p>What is the position of the character that causes Santa to first enter the basement?</p>
-<h3 id="thoughts-3"><a class="header" href="#thoughts-3">Thoughts</a></h3>
+<h3 id="thoughts-4"><a class="header" href="#thoughts-4">Thoughts</a></h3>
 <p>This took me by surprise! I had already started working on day 2. I actually saw that day 2 has a part 2 before I realized that day one had a part 2.</p>
 <p>At first glance, this problem looks like it is just about counting the characters I see and reporting when the floor hits -1. In the spirit of unix and in the aim of learning to let go of code, I will create a new project for this.</p>
 <pre><pre class="playground"><code class="language-rust">use std::io;
@@ -840,7 +1044,7 @@ fn main() {
 <p>A present with dimensions 1x1x10 requires 2*1 + 2*10 + 2*10 = 42 square feet of wrapping paper plus 1 square foot of slack, for a total of 43 square feet.</p>
 </blockquote>
 <p>All numbers in the elves' list are in feet. How many total square feet of wrapping paper should they order?</p>
-<h3 id="thoughts-4"><a class="header" href="#thoughts-4">Thoughts</a></h3>
+<h3 id="thoughts-5"><a class="header" href="#thoughts-5">Thoughts</a></h3>
 <p>For this problem, I wanted to play around with variable initialization. I couldn't get the <code>collect</code> call to return the just the three values in like a tuple that I could distribute to individual variables, so I settled on putting it into a Vec and separating them later.</p>
 <p>The <code>side</code> variables are meh. I could have done something more fancy with them, but I was tired and it didn't seem worth it. The <code>extra</code> variable initialization though! I like that one. I rarely use random code block at all in my code, but using it like this to initialize a semi complicated variable lets me see the power of these blocks!</p>
 <pre><pre class="playground"><code class="language-rust">use std::io;
@@ -884,7 +1088,7 @@ fn main() {
 <p>A present with dimensions 1x1x10 requires 1+1+1+1 = 4 feet of ribbon to wrap the present plus 1<em>1</em>10 = 10 feet of ribbon for the bow, for a total of 14 feet.</p>
 </blockquote>
 <p>How many total feet of ribbon should they order?</p>
-<h3 id="thoughts-5"><a class="header" href="#thoughts-5">Thoughts</a></h3>
+<h3 id="thoughts-6"><a class="header" href="#thoughts-6">Thoughts</a></h3>
 <p>I made this problem extremely annoying by trying to be fancy. If you put all the sides into an Vec and sort it, then the first two entries will be the smaller two sides. That is straight forward. Another thing that should have been straight forward is getting the cubed size. All you have to do is multiple <code>dimension[0] * dimension[1] * dimension[2]</code>, but no. I wanted to be fancy and use <code>reduce</code>.</p>
 <p>Fun fact. If you are iterating over a Vec, then you have access to references of the elements. If you call reduce on a Vec of references, then Rust expects you to deal with references in your reduce. I don't want to deal with references. As such, it took me 10 minutes to figure out that I had to use <code>map</code> to make non-reference copies of the elements of the Vec before calling reduce.</p>
 <p>All in all, being fancy was stupid. Next time just mupltiple the items together...</p>
@@ -929,7 +1133,7 @@ fn main() {
 <blockquote>
 <p>^v^v^v^v^v delivers a bunch of presents to some very lucky children at only 2 houses.</p>
 </blockquote>
-<h3 id="thoughts-6"><a class="header" href="#thoughts-6">Thoughts</a></h3>
+<h3 id="thoughts-7"><a class="header" href="#thoughts-7">Thoughts</a></h3>
 <p>If you treat the directions as 2d grid coordinates and then put the seen coordinates into a set, you are pretty much done. The only part I was confused about was whether or not I would make the borrow checker angry by passing my varaibles (that I still plan on using) to the HashSet. Upon reviewing the Rust Book, I performed a "<a href="https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#stack-only-data-copy">Stack-Only Data Copy</a>", which means that, for integers that exist entirely on the stack, a copy is made when you assign them to another variable leaving both variable valid.</p>
 <pre><pre class="playground"><code class="language-rust">use std::collections::HashSet;
 use std::io;
@@ -973,7 +1177,7 @@ fn main() {
 <blockquote>
 <p>^v^v^v^v^v now delivers presents to 11 houses, with Santa going one direction and Robo-Santa going the other.</p>
 </blockquote>
-<h3 id="thoughts-7"><a class="header" href="#thoughts-7">Thoughts</a></h3>
+<h3 id="thoughts-8"><a class="header" href="#thoughts-8">Thoughts</a></h3>
 <p>The problem seems more or less the same, with the difference being that even instructions go to Santa and the odd instructions go to the Robot.</p>
 <p>For a moment there, I was going to try to think of clever ways to split up the program, but the simple solution of maintaining two set of grid coordinates seems fine.</p>
 <pre><pre class="playground"><code class="language-rust">use std::collections::HashSet;
@@ -1044,7 +1248,7 @@ fn main() {
 <p>If your secret key is pqrstuv, the lowest number it combines with to make an MD5 hash starting with five zeroes is 1048970; that is, the MD5 hash of pqrstuv1048970 looks like 000006136ef....</p>
 </blockquote>
 <p>Your puzzle input is <code>iwrupvqb</code>.</p>
-<h3 id="thoughts-8"><a class="header" href="#thoughts-8">Thoughts</a></h3>
+<h3 id="thoughts-9"><a class="header" href="#thoughts-9">Thoughts</a></h3>
 <p>I took a brief look at the <a href="https://en.wikipedia.org/wiki/MD5">MD5 Wiki page</a> and no obvious ways to force my wanted output jumped out at me, so I think I am going to go with the brute force approach. In the largest example, it looked like it was a little over a million MD5 computations (assuming that you start from 1).</p>
 <pre><pre class="playground"><code class="language-rust">use std::io;
 
@@ -1082,7 +1286,7 @@ fn main() {
 <p>All in all, the change to the code was small. Now, I am using the LowerHex formatter instead of the Debug formatter. Though this makes my code a little cleaner, both traits were using the same fmt code under the hood, so its all kind of pointless...</p>
 <h2 id="the-problem-part-2-2"><a class="header" href="#the-problem-part-2-2">The Problem Part 2</a></h2>
 <p>Now find one that starts with six zeroes.</p>
-<h3 id="thoughts-9"><a class="header" href="#thoughts-9">Thoughts</a></h3>
+<h3 id="thoughts-10"><a class="header" href="#thoughts-10">Thoughts</a></h3>
 <p>I was going to go to bed, but I this seems like the exact same problem as the first. so I am going to take a crack at it.</p>
 <p>...</p>
 <p>They got me. The wording is different between part 1 and part 2. In part 1 it was "at least five zeros" and now it is "starts with six zeros", which means that if it starts with seven zeros, its is not correct! Given that I now have to care about the value that comes after the six zeros, I moved to using regex. The regex that I am currently using is <code>^0{6}[a-zA-Z1-9]</code>, but I am pretty sure this is overkill because hexidecimal is a-f and 0-9. Plus, I am explicitly setting it to LowerHex, which means that I do not have to care about the A-F.</p>
@@ -1146,7 +1350,7 @@ fn main() {
 <p>dvszwmarrgswjxmb is naughty because it contains only one vowel.</p>
 </blockquote>
 <p>How many strings are nice?</p>
-<h3 id="thoughts-10"><a class="header" href="#thoughts-10">Thoughts</a></h3>
+<h3 id="thoughts-11"><a class="header" href="#thoughts-11">Thoughts</a></h3>
 <p>This sounds like a one pass scan of the word with various check. For example, the first check is the vowels, so you add a set of vowels and check the current character against it and count the positive hits.</p>
 <p>The second condition is two character condition. If you are iterating over the input one character at a time, it makes sense to use index 0 to set the first <code>prev_char</code> and then use the pair of the previous character and the current character to check this condition (Must remember to update <code>prev_char</code>).</p>
 <p>The third condition has a similar setup to the second condition, but it is a "not containt", which means means that we can use this for early termination (ie, continue to the next input, but we don't have to. This could just be a flag as well).</p>
@@ -1219,7 +1423,7 @@ fn main() {
 <p>ieodomkazucvgmuy is naughty because it has a repeating letter with one between (odo), but no pair that appears twice.</p>
 </blockquote>
 <p>How many strings are nice under these new rules?</p>
-<h3 id="thoughts-11"><a class="header" href="#thoughts-11">Thoughts</a></h3>
+<h3 id="thoughts-12"><a class="header" href="#thoughts-12">Thoughts</a></h3>
 <p>I agree that the first set of ruls was ridiculous, but I am not sure I am a fan of the new rules...</p>
 <p>The first rules is tricky beause they cannot overlap. For example, if I kept a hashmap of each pair of a string, then <code>aaa</code> would count as 2 pairs. And <code>aaaa</code> should count as 2 pairs, but how do you know that they are not overlapping? You cannot split them by even and odd indices because the first pair may be one an even index while the second pair is on an odd index.</p>
 <p>I am going to have to continue thinking about this.</p>
@@ -1333,7 +1537,7 @@ fn main() {
 <p>turn off 499,499 through 500,500 would turn off (or leave off) the middle four lights.</p>
 </blockquote>
 <p>After following the instructions, how many lights are lit?</p>
-<h3 id="thoughts-12"><a class="header" href="#thoughts-12">Thoughts</a></h3>
+<h3 id="thoughts-13"><a class="header" href="#thoughts-13">Thoughts</a></h3>
 <p>This seems like a mini parser... We have strings like <code>turn on 0,0 through 999,999</code>, which are <code>&lt;command&gt; &lt;start_coordinates&gt; through &lt;end_coordinates&gt;</code>.</p>
 <p>I don't think I want to write a parser though, so lets split the words up by white space.</p>
 <p>Command:</p>
@@ -1516,7 +1720,7 @@ fn main() {
 <blockquote>
 <p>toggle 0,0 through 999,999 would increase the total brightness by 2000000.</p>
 </blockquote>
-<h3 id="thoughts-13"><a class="header" href="#thoughts-13">Thoughts</a></h3>
+<h3 id="thoughts-14"><a class="header" href="#thoughts-14">Thoughts</a></h3>
 <p>I actually think this is easier than part one. I don't need an enum anymore. I can have a regular struct that has an internal counter that goes up and down with a min value of zero. And the structure of the program is identical to the first one.</p>
 <p>I am going to try to write this up quickly and move on to my next task for the night.</p>
 <pre><pre class="playground"><code class="language-rust">use std::io;
@@ -1675,7 +1879,7 @@ x: 123
 y: 456
 </code></pre>
 <p>In little Bobby's kit's instructions booklet (provided as your puzzle input), what signal is ultimately provided to wire a?</p>
-<h3 id="thoughts-14"><a class="header" href="#thoughts-14">Thoughts</a></h3>
+<h3 id="thoughts-15"><a class="header" href="#thoughts-15">Thoughts</a></h3>
 <p>Though I have a general idea of what all of this means, it is best to refresh myself on the terms and operations before breaking down the problem.</p>
 <p>So bitwise operations happen on a <a href="https://en.wikipedia.org/wiki/Bit_array">bit array</a>, which you can think of as your binary representation of a number using 1's and 0's. We were told that our wire can carry up to a 16 bit signal. A bit is single place holder for a 0 or a 1. A 16 bit signal is 16 bits, which implies that we have 16 place holders for a 0 or 1.</p>
 <p>For example:</p>
@@ -1971,7 +2175,7 @@ fn main() {
 <p>All in all, I am really glad that I took time to think through the parts of the problem I did understand correctly. I think that if I were confused by any of the bitwise operations or the initial line parsing, I would have made so many mistakes that I would have given up out of frustration.</p>
 <h2 id="the-problem-part-2-5"><a class="header" href="#the-problem-part-2-5">The Problem Part 2</a></h2>
 <p>Now, take the signal you got on wire a, override wire b to that signal, and reset the other wires (including wire a). What new signal is ultimately provided to wire a?</p>
-<h3 id="thoughts-15"><a class="header" href="#thoughts-15">Thoughts</a></h3>
+<h3 id="thoughts-16"><a class="header" href="#thoughts-16">Thoughts</a></h3>
 <p>ITS THE SAME PROBLEM WITH ONE VARIABLE CHANGED!!!</p>
 <p>I updated the value for <code>b</code> in the input and ran the code again to get the answer. Off the top of my head, I am not exactly sure how this problem is any different from part 1.</p>
 <p>Meh. At least I solved it.</p>
@@ -1997,7 +2201,7 @@ fn main() {
 <p>Santa's list is a file that contains many double-quoted string literals, one on each line. The only escape sequences used are \ (which represents a single backslash), " (which represents a lone double-quote character), and \x plus two hexadecimal characters (which represents a single character with that ASCII code).</p>
 <p>Disregarding the whitespace in the file, what is the number of characters of code for string literals minus the number of characters in memory for the values of the strings in total for the entire file?</p>
 <p>For example, given the four strings above, the total number of characters of string code (2 + 5 + 10 + 6 = 23) minus the total number of characters in memory for string values (0 + 3 + 7 + 1 = 11) is 23 - 11 = 12.</p>
-<h3 id="thoughts-16"><a class="header" href="#thoughts-16">Thoughts</a></h3>
+<h3 id="thoughts-17"><a class="header" href="#thoughts-17">Thoughts</a></h3>
 <p>I am not sure of quick way of solving this that is not brute force pattern matching.</p>
 <p>The cases seem to be:</p>
 <ul>
@@ -2136,7 +2340,7 @@ fn main() {
 <p>"\x27" encodes to ""\x27"", an increase from 6 characters to 11.</p>
 </blockquote>
 <p>Your task is to find the total number of characters to represent the newly encoded strings minus the number of characters of code in each original string literal. For example, for the strings above, the total encoded length (6 + 9 + 16 + 11 = 42) minus the characters in the original code representation (23, just like in the first part of this puzzle) is 42 - 23 = 19.</p>
-<h3 id="thoughts-17"><a class="header" href="#thoughts-17">Thoughts</a></h3>
+<h3 id="thoughts-18"><a class="header" href="#thoughts-18">Thoughts</a></h3>
 <p>It is 2 am, I'm tired, and I should go to bed, but this looks a lot simplier than part 1.</p>
 <blockquote>
 <p>Each line gets a plus 2 because we have new quotes.</p>
@@ -2208,7 +2412,7 @@ Belfast -&gt; London -&gt; Dublin = 982
 </code></pre>
 <p>The shortest of these is <code>London -&gt; Dublin -&gt; Belfast = 605</code>, and so the answer is 605 in this example.</p>
 <p>What is the distance of the shortest route?</p>
-<h3 id="thoughts-18"><a class="header" href="#thoughts-18">Thoughts</a></h3>
+<h3 id="thoughts-19"><a class="header" href="#thoughts-19">Thoughts</a></h3>
 <p>These problems always scare me because I suck at them. In Python, I would use <a href="https://docs.python.org/3/library/itertools.html#itertools.permutations">itertools.permutations</a> to get the list of distinct possible routes, sum them up and keep the lowest value, but I don't have that function in Rust. The Python docs have and example of how to write the algorthim and I am hesitant to transcribe it to Rust because I do not fully understand (and will most likely make a mistake...).</p>
 <p>I know that this is a simple problem. I know that combinatorially their are <code>n!/2</code> options. <code>n!</code> because you have <code>n</code> options for the first place and <code>n-1</code> options for the next, and so on. You divide by <code>2</code> because, with reference to this problem, going forward and going backwards gives you the same value. So in there example, we had 3 options, which leads to 3! (6) total permutations, but half of these permuations give identical results.</p>
 <p>The input file only has 7 options. <code>7!</code>. I was going to say that <code>7!/2</code> was small enough to do by hand, but then I opened up a calculator and discovered thats <code>2,520</code> options...</p>
@@ -2379,7 +2583,7 @@ fn main() {
 <p>He can still start and end at any two (different) locations he wants, and he still must visit each location exactly once.</p>
 <p>For example, given the distances above, the longest route would be 982 via (for example) Dublin -&gt; London -&gt; Belfast.</p>
 <p>What is the distance of the longest route?</p>
-<h3 id="thoughts-19"><a class="header" href="#thoughts-19">Thoughts:</a></h3>
+<h3 id="thoughts-20"><a class="header" href="#thoughts-20">Thoughts:</a></h3>
 <p>I should be able to copy and paste the solution from part 1 and change the operators from less than to greater than and get the answer... I hope that's it because I really do not want to spend too much more time on this problem.</p>
 <h3 id="solution-part-2-1"><a class="header" href="#solution-part-2-1">Solution Part 2</a></h3>
 <p>Change operators and some variable names from like min to max and shortest to longest, but that was all.</p>
@@ -2500,7 +2704,7 @@ fn main() {
 </blockquote>
 <p>Starting with the digits in your puzzle input, apply this process 40 times. What is the length of the result?</p>
 <p>Your puzzle input is 1113122113.</p>
-<h3 id="thoughts-20"><a class="header" href="#thoughts-20">Thoughts</a></h3>
+<h3 id="thoughts-21"><a class="header" href="#thoughts-21">Thoughts</a></h3>
 <p>This seems like a string builder program. I read in the input string, I count how many times I see the same char, then I write it out literally.</p>
 <p>Take 111221 for example:</p>
 <ul>
@@ -2590,7 +2794,7 @@ fn main() {
 </blockquote>
 <p>Given Santa's current password (your puzzle input), what should his next password be?</p>
 <p>Your puzzle input is <code>hxbxwxba</code>.</p>
-<h3 id="thoughts-21"><a class="header" href="#thoughts-21">Thoughts</a></h3>
+<h3 id="thoughts-22"><a class="header" href="#thoughts-22">Thoughts</a></h3>
 <p>The password being a fixed size great help. 8 characters is small enough that I can create a function for each one of these checks and not care how long it will take to process.</p>
 <p>For no reason in particular, I am thinking about fancy stuff like a validate function that takes a list of functions and a string as input. The string will then get tested against all the functions in the list and if any of the function return false, it will return false.</p>
 <p>The reason I can do this is because all the validation checks have the same function signature, which is that they take in a string reference and return a boolean.</p>
@@ -2805,7 +3009,7 @@ fn main() {
 </blockquote>
 <p>You will not encounter any strings containing numbers.</p>
 <p>What is the sum of all numbers in the document?</p>
-<h3 id="thoughts-22"><a class="header" href="#thoughts-22">Thoughts</a></h3>
+<h3 id="thoughts-23"><a class="header" href="#thoughts-23">Thoughts</a></h3>
 <p>I don't want to use a JSON library for this. This seems like a string parser will do. I think I an use a state machine to capture the number.</p>
 <p>States:</p>
 <ul>
@@ -2856,7 +3060,7 @@ fn main() {
 <blockquote>
 <p>[1,"red",5] has a sum of 6, because "red" in an array has no effect.</p>
 </blockquote>
-<h3 id="thoughts-23"><a class="header" href="#thoughts-23">Thoughts</a></h3>
+<h3 id="thoughts-24"><a class="header" href="#thoughts-24">Thoughts</a></h3>
 <p>They want me to keep track of the curly brackets. That said, this is pretty tricky because "red" could be the last item in the object, and, if it is, I have to ignore all the numbers collected in that object.</p>
 <p>I also have to take nested children into consideration as well. So...Is this like a Stack where each entry represents a level of depth? Maybe not a stack. I think I can use a Vec and have each index be a sum for that depth. If I see "red", everything at the idex and past it get set to zero.</p>
 <p>At the end of the program, I sum the Vec.</p>
