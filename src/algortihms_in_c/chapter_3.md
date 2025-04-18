@@ -170,19 +170,6 @@ The compromise is that I wrote it in Python.
 {{#include ../../Algorithms_in_C/ch_3/linked_lists/linked_list.py}}
 ```
 
-__Output:__
-```
-❯ python linked_list.py 
-0: Node(key=5)
-1: Node(key=10)
-2: Node(key=15)
-
-Delete Node(key=10)
-
-0: Node(key=5)
-1: Node(key=15)
-```
-
 #### Thoughts
 I'm kind of angry with how easy it was to translate this into Python. I love Rust, but it always hurts when you try to do "simple" things in programming that are actually extremely difficult in Rust and you end up struggling for hours.
 
@@ -191,6 +178,18 @@ That aside, the Python translation was straightforward. I added `__repr__` metho
 For the LinkedList, having the dummy `head` and `z` worked wonders in making the `insert_after` and the `delete_next` methods simple. It also does not limit the your options for new Nodes because the terminal node `z` is a pointer check to the class instance and not a equality check. So, in theory, I can add other nodes with the same properties of `z` to my linked_list and it should work fine.
 
 I also liked how easy it was to skip the dummy nodes when iterating over the list. If you don't look at the implementation, (based off `main` and the output) you would never know that dummy nodes are being used. 
+
+### JavaScript Implementation
+```javascript
+{{#include ../../Algorithms_in_C/ch_3/linked_lists/linked_list.js}}
+```
+
+#### Thoughts:
+JavaScript is strange, VS Code is strange and I'm so tired that I am surprised I was able to do anything.
+
+Also, I hate the copilit suggestions. It interrupts my thoughts. No matter what I do, the suggestions are still there?!
+
+I think the suggestions are gone... FINALLY!
 
 ## Linked List -- Continued
 
@@ -228,3 +227,77 @@ In Rust, I cannot use Linked List in they way Python and C do it, so I implement
 ```Rust
 {{#include ../../Algorithms_in_C/ch_3/circular_linked_list/josephus/src/main.rs}}
 ```
+
+## Back to the Book:
+The program uses a circular linked list to simulate the sequence of executions directly. First, the list is built with keys from 1 to `N`: the variable `x` holds onto the beginning of the list as it is built, then the pointer in the last node in the list is set to `x`. Then, the program proceeds through the list, counting through `M` - 1 items and deleting the next, until only one is left (which then points to itself). Note the call to `free` for the delete, which corresponds to an execution: this is the opposite of `malloc` as mentioned before.
+
+## Storage Allocation
+
+C's pointers provide a convenient way to implement lists, as shown above, but there aere alternatives. In this section we discuss how to use `arrays` to implement linked lists and how this is related to the actual representation of memory of a computer, so that analysis of how a data structure is implemented as an array will give you some insight into how it might be represented at a low level in the computer. In particular, we're interested in seeing how several lists might be represented simultaneously.
+
+In a direct-array representation of linked lists, we use indices instead of links. One way to proceed would be to define an array of records like those above, but using `integers` (for array indices) rather than pointers for the `next` field. An alternative, which often turns out to be more convenient, is to use "parallel arrays": we keep the items in an array `key` and the links in an array `next`. Thus, `key[next][head]` refers ti the information associated with the first item on the list, `key[next[next[head]]]` to the second, etc. The advantage of using parallel arrays is that the structure can be built "on top of" the data: the array `key` contains data and only data -- all the structure is in the parallel array `next`. For example, another list can be built using the same data array and a different parallel "link" array, or more data can be added with more parallel arrays. The following code implements the basic list operations using parallel arrays:
+
+### C Implementation:
+The errors you get when you try to compile code snippets from books can be rough, especially when you do not know the language well.
+
+```c
+{{#include ../../Algorithms_in_C/ch_3/linked_lists/array_linked_list/array_linked_list.c}}
+```
+
+### Rust Implementation:
+I wrote this about two weeks ago, so I am a bit fuzzy on how I felt at the time of writing it. All I know is that I spent hours trying to write a node based linked list and, after giving up, I came back, I think a day later, and struggled translating this to Rust. I believe the tricky part was getting the indices right. If `insert_after` does not return the correct value for the next index, everything becomes wonky. 
+
+```Rust
+{{#include ../../Algorithms_in_C/ch_3/linked_lists/linked_list/src/main.rs}}
+```
+
+## Continue the Book
+
+Each call on the storage allocation function `malloc` is replaced by simply incrementing the "pointer" `x`: it keeps track of the next unused position in the array.
+
+```admonish note
+I'm skipping the Figure examples in this section because I cannot draw them.
+```
+
+The crux of the matter is to consider how the built-in procedures `malloc` and `free` might be implemented. We presume that the only space for nodes and links are the arrays we've been using; this presumption puts us in the situation the system is in when it has to provide the capability to grow and shrink a data structure wuth a fixed data structure (the memory itself). For example, suppose that the node containing `A` is to be deleted from the example in Figure 3.5 and then disposed of. It is one thing to rearrange the links so that node is no longer hooked into the list, but what do we do with the space occupied by that node? And how do we find space for a node when `new` is called and more space is needed?
+
+On reflection, the reader will see that the solution is clear: a linked list should be used to keep track of the free space! We refer to this list as the "free list." Then, when we `delete` a node from our list we dispose of it by `inserting` it into the free list, and when we need a `new` node, we get it by `deleting` it from the free list. This mechanism allows several different lists to occupy the same array.
+
+When storage management is provided by the system, as in C, there is no reason to override in this way. The description above is intented to indicate how the storage management is done by the system. The actual problem faced by the system is rather more complex, as not all nodes are necessarily of the same size. Also, some systems relieve the user of the need to explicitly `free` nodes by using `garbage-collection` algorithms to remove any nodes not referenced by any link. A number of rather clever storage management algorithms have been developed to handle these two situations.
+
+## Pushdown Stacks
+
+We have been concentrating on structuring data in order to insert, delete, or access items arbitrarily. Actually, it turns out that for many applications, it suffices to consider various (rather stringent) restrictions on how the data structure is accessed. Such restrictions are beneficial in two ways: first, they can alleviate the need for the program using data structure to be concerned with its details (for example, keeping track of links to or indices of items); second, they allow simpler and more flexible implementations, since fewer operations need be supported.
+
+The most important restricted-access data structure is the `pushdown stack`. Only two basic operations are involved: one can `push` an item into the stack (insert it at the beginning) and `pop` an item (remove it from the beginning). A stack operates somewhat like a busy executive's "in" box: work piles up in a stack, and whenever the executive is ready to do some work, he takes it off the top. This might mean that something get stuck in the bottom of the stack for some time, but a good executive would presumably manage to get the stack emptied periodically. It turns out that sometimes a computer program is naturally organized in this way, postponing some tasks while doing others, and thus pushdown stacks appear as the fundamental data structure for many algorithms.
+
+We'll see a great many applications of stacks in the chapters that follow: for an introductory example, let's look at using stacks in evaluating arithmetic expressions. Suppose that one wants to find the value of a simple arithmetic expression involving multiplication and addition of integers, such as:
+
+```
+5 * (((9 + 8) * (4 * 6)) + 7
+```
+
+A stack is the ideal mechanism for saving intermediate results in such a calculation. The above example might be computed with the calls:
+
+```
+push(5);
+push(9);
+push(8);
+push(pop() + pop());
+push(4);
+push(6);
+push(pop()*pop());
+push(pop()*pop());
+push(7);
+push(pop()+pop());
+push(pop()*pop());
+printf("%d\n", pop());
+```
+
+The order in which the operations are performed is dictated by the parentheses in the expression, and by the convention that we proceed from left to right. Other conventions are possible; for example 4*6 could be computed before 9+8 in the example above. And in C, the order in which the two `pop()` operations is performed is unspecified, so slightly more complicated code is needed for noncommutative operators such as subtract and divide.
+
+Some calculators and some computing languages base their method of calculation on stack operations explicitly: every operations pops its argument from the stack and returns its results to the stack. As we'll see in Chapter 5, stacks often arise implicitly even when not used explicitly.
+
+The basic stack operations are easy to implement using linked lists as in the following implementation:
+
+### C Implementation

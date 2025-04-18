@@ -1,5 +1,8 @@
 book
 
+#vscode
+.vscode/
+
 #emacs
 *~
 *#
